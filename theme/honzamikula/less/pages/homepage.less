@@ -1,0 +1,161 @@
+/** HOMEPAGE **/
+
+
+// Layout
+
+#homepage {
+
+  padding: 0 0 0 @headerWidth;
+
+  // Styles for mobile
+  @media (max-width: 1065px) {
+    padding: 0;
+
+    background: #fff;
+  }
+
+}
+
+// Content
+
+#homepage main {
+
+  box-sizing: border-box;
+  padding: @baseline;
+  width: 647px;
+
+  background: #fff;
+
+  // Listing of articles
+  article {
+    border-bottom: 1px solid #eee;
+    padding: 0 0 @baseline 0;
+    margin: 0 0 @baseline 0;
+
+    color: #333;
+
+    font-family: @fontSans;
+    font-weight: 400;
+
+    &:last-of-type {
+      border: 0;
+    }
+
+    header {
+      color: #999;
+
+      font-family: @fontSans;
+      font-size: 12px;
+      font-weight: bold;
+      text-align: right;
+
+      .clearfix;
+    }
+
+    topic {
+      float: left;
+
+      a {
+        color: #999;
+
+        text-decoration: none;
+
+        transition: 0.2s color;
+
+        &:active,
+        &:focus,
+        &:hover {
+          color: #666;
+        }
+      }
+    }
+
+    h2 {
+      margin: 0 0 @baseline/2 0;
+
+      font-size: 24px;
+      line-height: @baseline;
+
+      a {
+        display: block;
+
+        color: #333;
+
+        text-decoration: none;
+
+        transition: 0.2s color;
+
+        &:active,
+        &:focus,
+        &:hover {
+          color: #000;
+        }
+      }
+    }
+
+    p {
+      color: #666;
+    }
+
+    img {
+      display: block;
+      height: auto;
+      margin: 0 0 @baseline/2 0;
+      max-width: 100%;
+    }
+  }
+
+
+  // Category specialities
+  h1 {
+    font-size: 36px;
+    line-height: @baseline * 2;
+  }
+
+  &.listing article header {
+    text-align: left;
+  }
+
+
+
+  // Styles for tables
+
+  @media (max-width: 1065px) {
+    margin: 0 auto;
+  }
+
+
+  // Styles for mobile
+
+  @media (max-width: @mobile) {
+
+    padding: @mBaseline / 2;
+    width: auto;
+
+    line-height: @mBaseline;
+
+    // Listing of articles
+    article {
+      padding: 0 0 @mBaseline/2 0;
+      margin: 0 0 @mBaseline/2 0;
+
+      h2 {
+        font-size: 21px;
+        font-weight: 600;
+      }
+
+      p {
+        font-size: @mBaseFont;
+        line-height: @mBaseline;
+      }
+    }
+
+    // Category specialities
+    h1 {
+      font-size: 24px;
+      line-height: @mBaseline * 2;
+    }
+
+  }
+
+}

@@ -1,0 +1,21 @@
+{
+  "author": "Jan Mikula",
+  "name": "HonzaMikula.cz",
+  "version": "0.0.1",
+  "private": true,
+  "bugs": "",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "dependencies": {
+    "grunt-cli": "~0.1.11"
+  },
+  "devDependencies": {
+    "grunt": "*",
+    "grunt-contrib-watch": "*",
+    "grunt-contrib-less": "*",
+    "grunt-autoprefixer": "*",
+    "grunt-contrib-jshint": "*"
+  }
+}

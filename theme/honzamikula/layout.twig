@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head lang="cs">
+  <meta charset="utf-8"/>
+
+  <title>{% block title %}Honza Mikula{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="description" content="{% block description %}{% endblock %}" />
+  <link href='//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,300,400,600,700&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" type="text/css" href="{{ paths.theme }}css/style.css?v={{ config.get('general/css_version') }}" media="screen,projection,tv"/>
+  <!--[if lt IE 9]>
+    <script src="{{ paths.theme }}bower_components/html5shiv/dist/html5shiv.js"></script>
+  <![endif]-->
+
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', '{{ config.get('general/google_analytics_id') }}', 'auto');
+    ga('send', 'pageview');
+
+  </script>
+
+
+  {% block open_graph %}{% endblock %}
+</head>
+<body id="{% block body_id %}{% endblock %}" {% block schema_org %}{% endblock %}>
+  {% block body %}{% endblock %}
+
+  <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+  <script src="{{ paths.theme }}js/main.js?v={{ config.get('general/js_version') }}"></script>
+
+  {% block js_end_body %}{% endblock %}
+</body>
+</html>

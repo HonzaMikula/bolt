@@ -1,0 +1,38 @@
+{% set link = pager.makelink() %}
+
+{% if pager.totalpages > 1 %}
+  <pagination aria-label="Stránkování">
+    <ul class="pagination">
+
+      {# 'first' and 'prev' #}
+      {% if pager.current > 1 and class!="narrow" %}
+          <li class="prev"><a href="{{link}}{{pager.current-1}}">Předchozí</a></li>
+      {% endif %}
+      {% if pager.current > surr+1 %}
+          <li class="prev"><a href="{{link}}{{1}}">Předchozí</a></li>
+      {% endif %}
+
+      {# start with '..' if there are more than surr+1 before currentpage.. #}
+      {% if pager.current > surr+2 %}
+          <li class="disabled"><a href="#">...</a></li>
+      {% endif %}
+
+      {% for i in max(1, pager.current-surr)..min(pager.current+surr, pager.totalpages) %}
+          <li {% if i==pager.current %}class='active'{%endif%}><a href="{{link}}{{i}}">{{i}}</a></li>
+      {% endfor %}
+
+      {# end with '..' if there are more than surr+1 after currentpage.. #}
+      {% if pager.current < (pager.totalpages - surr - 1) %}
+          <li class="disabled"><a href="#">...</a></li>
+      {% endif %}
+
+      {# 'next' and 'last' #}
+      {% if pager.current < pager.totalpages-surr %}
+          <li class="next"><a href="{{link}}{{pager.totalpages}}">{{pager.totalpages}} Další</a></li>
+      {% endif %}
+      {% if pager.current < pager.totalpages and class!="narrow" %}
+          <li class="next"><a href="{{link}}{{pager.current+1}}">Další</a></li>
+      {% endif %}
+    </ul>
+  </pagination>
+{% endif %}

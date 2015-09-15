@@ -1,0 +1,103 @@
+{% extends "layout.twig" %}
+
+{% block title %}Honza Mikula{% endblock %}
+{% block description %}Jsem fanoušek povídavé ekonomie, kognitivní psychologie a UX. Líbí se mi koncepty jako svoboda v učení a svoboda v práci.{% endblock %}
+{% block body_id %}homepage{% endblock %}
+
+{% block open_graph %}
+  <meta property="og:title" content="Honza Mikula" />
+  <meta property="og:type" content="site" />
+  <meta property="og:url" content="http://www.honzamikula.cz/" />
+  <meta property="og:image" content="http://www.honzamikula.cz/honzamikula/theme/honzamikula/img/jan-mikula-54x54.png" />
+{% endblock %}
+
+{% block schema_org %}itemscope itemtype="http://schema.org/WebSite"{% endblock %}
+
+{% block body %}
+  {% setcontent mythemes = 'themes/latest/1' %}
+  {% for mytheme in mythemes %}
+  <header aria-label="Informace o stránce a sociální sítě" class="{{ mytheme.color ? 'reverse' }}" style="background-image: url({{ thumbnail(mytheme.image_header, 800, 0) }})">
+    <div>
+      <h1>{% block header_heading %}Honza Mikula{% endblock %}</h1>
+      <p>
+        Jsem fanoušek <a href="http://www.mises.cz" data-ga="Outbound">povídavé ekonomie</a>, kognitivní psychologie a UX. Líbí se mi
+        koncepty jako <a href="http://www.svobodauceni.cz" data-ga="Outbound">svoboda učení</a> a <a href="http://www.svobodavpraci.cz" data-ga="Outbound">svoboda v práci</a>.
+      </p>
+
+      <form action="//honzamikula.us8.list-manage.com/subscribe/post?u=0aa8c0b091d21d477832fbe62&amp;id=2eb1714fea" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate aria-label="Odebírat články emailem">
+        <h2>Zasílat články emailem</h2>
+        <div style="position: absolute; left: -5000px;"><input type="text" name="b_0aa8c0b091d21d477832fbe62_2eb1714fea" tabindex="-1" value=""></div>
+        <div>
+          <input type="email" value="@" name="EMAIL">
+          <input type="submit" name="subscribe" value="Přihlásit">
+        </div>
+      </form>
+
+      <social aria-label="Odkazy na sociální sítě">
+        <a class="mobile" href="http://eepurl.com/X7Flj">@</a>
+        <a href="https://www.twitter.com/janmikula">t</a>
+        <a href="https://www.facebook.com/mikulajan">f</a>
+        <a href="https://www.linkedin.com/in/janmikula">ln</a>
+        <a href="/rss/feed.rss">rss</a>
+      </social>
+    </div>
+    <p>{{ mytheme.title }}</p>
+  </header>
+  {% endfor %}
+
+    <main aria-label="Seznam článků" class="{% block main_class %}{% endblock %}">
+      {% block listing %}
+
+        {% setcontent articles = "articles/latest/7" allowpaging %}
+        {% for article in articles %}
+          <article>
+            <header>
+              {% if article.taxonomy.categories is defined %}
+                <topic>
+                  {% for categorySlug, categoryName  in article.taxonomy.categories %}
+                    <a href="{{ categorySlug }}">{{ categoryName }}</a>{% if not loop.last %}, {% endif %}
+                  {% endfor %}
+                </topic>
+              {% endif %}
+              <time datetime="{{ article.datepublish }}">{{ article.datepublish|localdate("%d. %m. %Y") }}</time>
+            </header>
+            <h2><a href="{{ article.slug }}">{{ article.title }}</a></h2>
+            {% if article.image!="" %}
+              <figure>
+                <a href="{{ article.slug }}">
+                  <img src="{{ thumbnail(article.image, 1186, 648) }}"
+                       srcset="{{ thumbnail(article.image, 593, 324) }} 1x, {{ thumbnail(article.image, 1186, 648) }} 2x"
+                       width="593" height="324">
+                </a>
+              </figure>
+            {% endif %}
+            {{ article.teaser}}
+          </article>
+        {% endfor %}
+
+        {{ pager('', 10, 'templates/pagination.twig') }}
+
+        <article>
+          <header>
+            <topic><a href="https://www.twitter.com/janmikula">Štěbetání na Twitteru</a></topic>
+          </header>
+          <a href="https://twitter.com/janmikula"
+             class="twitter-timeline"
+             data-widget-id="426353726635257856" data-tweet-limit="3"
+             data-chrome="transparent noborders nofooter noheader noscrollbar"
+             width="580", height="300">Tweets by @janmikula</a>
+        </article>
+
+        <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+
+      {% endblock %}
+    </main>
+{% endblock %}
+
+{% block js_end_body %}
+  <script>
+    $(document).ready(function () {
+      window.app.initHomepage();
+    });
+  </script>
+{% endblock %}

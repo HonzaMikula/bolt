@@ -1,0 +1,157 @@
+[
+    {
+        "name": "bolt/rssfeed",
+        "version": "dev-master",
+        "version_normalized": "9999999-dev",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/GawainLynch/bolt-extension-rssfeed.git",
+            "reference": "c3c908a35b25037b01f783841b890ce37d135375"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/GawainLynch/bolt-extension-rssfeed/zipball/c3c908a35b25037b01f783841b890ce37d135375",
+            "reference": "c3c908a35b25037b01f783841b890ce37d135375",
+            "shasum": ""
+        },
+        "require": {
+            "bolt/bolt": ">=2.0.0,<3.0.0"
+        },
+        "time": "2014-10-13 21:44:00",
+        "type": "bolt-extension",
+        "installation-source": "dist",
+        "autoload": {
+            "files": [
+                "init.php"
+            ],
+            "psr-4": {
+                "Bolt\\Extension\\Bolt\\RSSFeed\\": [
+                    "",
+                    "src/"
+                ]
+            }
+        },
+        "license": [
+            "GPL-3.0+"
+        ],
+        "authors": [
+            {
+                "name": "Patrick van Kouteren",
+                "email": "info@wedesignit.nl"
+            },
+            {
+                "name": "Gawain Lynch",
+                "email": "gawain.lynch@gmail.com"
+            }
+        ],
+        "description": "RSS feeds extension for Bolt",
+        "keywords": [
+            "RSS"
+        ],
+        "support": {
+            "source": "https://github.com/GawainLynch/bolt-extension-rssfeed/tree/master",
+            "issues": "https://github.com/GawainLynch/bolt-extension-rssfeed/issues"
+        }
+    },
+    {
+        "name": "bolt/sitemap",
+        "version": "dev-master",
+        "version_normalized": "9999999-dev",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/bolt/Sitemap.git",
+            "reference": "7b8bae7e74b466896f31a5a16b3d47e7a2a45498"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/bolt/Sitemap/zipball/7b8bae7e74b466896f31a5a16b3d47e7a2a45498",
+            "reference": "7b8bae7e74b466896f31a5a16b3d47e7a2a45498",
+            "shasum": ""
+        },
+        "require": {
+            "bolt/bolt": ">=2.0.0,<3.0.0"
+        },
+        "time": "2014-10-05 13:04:16",
+        "type": "bolt-extension",
+        "installation-source": "dist",
+        "autoload": {
+            "files": [
+                "init.php"
+            ],
+            "psr-4": {
+                "Bolt\\Extension\\Bolt\\Sitemap\\": ""
+            }
+        },
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Bob den Otter",
+                "email": "bob@twokings.nl"
+            },
+            {
+                "name": "Patrick van Kouteren",
+                "email": "info@wedesignit.nl"
+            }
+        ],
+        "support": {
+            "source": "https://github.com/bolt/Sitemap/tree/master",
+            "issues": "https://github.com/bolt/Sitemap/issues"
+        }
+    },
+    {
+        "name": "foundrycode/boltredirector",
+        "version": "dev-master",
+        "version_normalized": "9999999-dev",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/foundry-code/bolt-redirector.git",
+            "reference": "6681c69ad24b7a9f3139f88cb1ea9c08face5d06"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/foundry-code/bolt-redirector/zipball/6681c69ad24b7a9f3139f88cb1ea9c08face5d06",
+            "reference": "6681c69ad24b7a9f3139f88cb1ea9c08face5d06",
+            "shasum": ""
+        },
+        "require": {
+            "bolt/bolt": ">=2.0.0,<3.0.0"
+        },
+        "time": "2014-08-30 12:45:23",
+        "type": "bolt-extension",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "1.0.*"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "files": [
+                "init.php"
+            ],
+            "psr-4": {
+                "Bolt\\Extension\\FoundryCode\\": ""
+            }
+        },
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Mike Anthony",
+                "email": "code@foundrybusiness.co.za"
+            }
+        ],
+        "description": "Easily manage 301 redirects; useful for migrating from another platform.",
+        "keywords": [
+            "301",
+            "migration",
+            "redirect"
+        ],
+        "support": {
+            "source": "https://github.com/foundry-code/bolt-redirector/tree/master",
+            "issues": "https://github.com/foundry-code/bolt-redirector/issues"
+        }
+    }
+]

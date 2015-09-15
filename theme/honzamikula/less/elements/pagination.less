@@ -1,0 +1,70 @@
+/* PAGINATION */
+
+pagination {
+  display: table;
+  margin: @baseline auto;
+
+  li {
+    float: left;
+  }
+
+  a {
+    border: 1px solid #ddd;
+    border-radius: 100%;
+    display: block;
+    float: left;
+    margin: 0 @baseline / 4;
+    height: @baseline*1.5;
+    width: @baseline*1.5;
+
+    color: #666;
+
+    font-family: @fontSans;
+    line-height: @baseline*1.5;
+    text-align: center;
+    text-decoration: none;
+
+    transition: 0.2s background;
+
+    &:active,
+    &:hover,
+    &:focus {
+      background: #eee;
+    }
+  }
+
+
+  .active a {
+    background: #ddd;
+  }
+
+  .next a,
+  .prev a {
+    border: 0;
+    width: auto;
+
+    transition: 0.2s color;
+
+    &:active,
+    &:hover,
+    &:focus {
+      background: none;
+      color: #000;
+    }
+  }
+
+  @media (max-width: @mobile) {
+
+    font-size: @mBaseFont;
+
+    a {
+      margin: 0 @mBaseline/4;
+      height: @mBaseline * 1.5;
+      width: @mBaseline * 1.5;
+
+      line-height: @mBaseline * 1.5;
+    }
+
+  }
+
+}

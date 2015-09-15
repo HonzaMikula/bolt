@@ -1,0 +1,401 @@
+#article {
+
+  background: #fff;
+
+
+  // Navigation
+  nav {
+    position: fixed;
+    left: @baseline;
+    top: @baseline;
+
+    a {
+      position: relative;
+
+      border-radius: 100%;
+      display: block;
+      height: @baseline * 2;
+      width: @baseline * 2;
+
+      background: url(../img/topic1/home.jpg) center center no-repeat;
+      background-size: @baseline*2 @baseline*2;
+      color: transparent;
+      image-rendering: pixelated;
+
+      font-family: @fontSans;
+      font-size: 14px;
+      font-weight: bold;
+      line-height: @baseline * 2;
+      text-align: center;
+      text-decoration: none;
+
+      transform: scale(1);
+      transition: 0.2s all;
+      will-change: transform;
+
+      &:after {
+        position: absolute;
+        bottom: -@baseline;
+
+        display: block;
+        width: 100%;
+
+        color: #333;
+        opacity: 0;
+
+        line-height: @baseline;
+        text-align: center;
+
+        content: attr(title);
+        transition: 0.2s all;
+      }
+
+      &:hover {
+        transform: scale(1.2);
+      }
+
+      &:hover:after {
+        opacity: 1;
+      }
+    }
+  }
+
+
+  // Main Content
+
+  main {
+    box-sizing: border-box;
+    padding: @baseline;
+    margin: 0 auto;
+    max-width: 767px;
+
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    h1 {
+      margin: 0 0 @baseline 0;
+
+      font-size: 36px;
+      line-height: @baseline * 2;
+    }
+
+    h2 {
+      margin: @baseline 0;
+
+      font-size: 24px;
+    }
+
+    h3 {
+      margin: @baseline 0;
+
+      font-size: @baseFont;
+    }
+
+    p,
+    ul {
+      margin: @baseline 0;
+    }
+
+    ul li {
+      margin: 0 0 0 @baseline;
+
+      list-style: disc;
+    }
+
+    ol li {
+      margin: 0 0 @baseline @baseline;
+
+      list-style: decimal;
+    }
+
+    blockquote p {
+      font-style: italic;
+
+      &:before {
+        content: '„';
+      }
+
+      &:after {
+        content: '“';
+      }
+    }
+  }
+
+
+  // Author, time, category
+
+  main footer {
+    position: relative;
+
+    display: table;
+    width: 100%;
+
+    font-family: @fontSans;
+
+    // Author name and social networks
+    h2 {
+      margin: 0;
+
+      font-size: @baseFont;
+    }
+
+    p {
+      margin: 0;
+
+      font-size: 16px;
+    }
+
+    // Date of publishing
+    time {
+      position: absolute;
+      top: 0;
+      right: 0;
+
+      color: #999;
+
+      font-size: @baseFont;
+      font-weight: bold;
+    }
+
+    // Author image
+    span {
+      border-radius: @baseline;
+      display: block;
+      float: left;
+      height: @baseline * 2;
+      margin: 0 @baseline/2 0 0;
+      width: @baseline * 2;
+      overflow: hidden;
+
+      background: #fff;
+    }
+
+    span img {
+      display: block;
+      height: 100%;
+      margin: 0 auto;
+    }
+
+    // Topics
+    topic {
+      position: absolute;
+      right: 0;
+      top: @baseline;
+
+      font-size: 16px;
+    }
+  }
+
+
+  // Social sharing and comments
+
+  aside {
+    background: #eee;
+
+    > div {
+      box-sizing: border-box;
+      min-height: 317px;
+      padding: @baseline;
+      margin: 0 auto;
+      max-width: 767px;
+    }
+
+    ul li {
+      float: left;
+      margin: 0 @baseline/2 @baseline 0;
+    }
+  }
+
+  //- Latest Article
+  latest-article {
+    display: block;
+    padding: @baseline 0 0 0;
+
+    background: #fff;
+
+    article {
+      position: relative;
+
+      box-sizing: border-box;
+      display: table;
+      margin: 0 auto @baseline auto;
+      min-height: @baseline * 3;
+      padding: 0 0 0 @baseline*4;
+      width: 540px;
+
+      &.no-image {
+        min-height: auto;
+      }
+    }
+
+    img {
+      position: absolute;
+      left: 0;
+      top: 0;
+
+      border-radius: 100%;
+    }
+
+    h2,
+    h2 a {
+      color: #000;
+    }
+
+    p,
+    p a{
+      color: #999;
+
+      font-family: @fontSans;
+    }
+
+  }
+
+
+
+
+
+  // Styles for small screen
+
+  @media (max-width: @smallScreen) {
+
+    // Navigation
+    nav {
+      position: static;
+
+      a {
+        height: @mBaseline;
+        width: auto;
+
+        background: none !important; // to override inline CSS
+        color: #999;
+
+        line-height: @mBaseline;
+        text-align: left;
+
+        &:after {
+          display: none;
+        }
+
+        &:before {
+          content: '‹ ' attr(aria-label);
+        }
+
+        &:hover {
+          transform: scale(1);
+        }
+      }
+
+    }
+
+  }
+
+  // Styles for mobile
+
+  @media (max-width: @mobile) {
+
+    // Main Content
+    main {
+      padding: @mBaseline / 2;
+
+      line-height: @mBaseline;
+
+      h1 {
+        font-size: 21px;
+        line-height: @mBaseline;
+      }
+
+      h2 {
+        font-size: 18px;
+      }
+
+      p {
+        font-size: 16px;
+      }
+
+      h1,
+      h2,
+      p {
+        margin: @mBaseline 0;
+      }
+
+      ul li {
+        margin: 0 0 0 @mBaseline;
+      }
+
+      ol li {
+        margin: 0 0 @mBaseline @mBaseline;
+      }
+
+    }
+
+
+    // Author, time, category
+
+    main footer {
+
+      h2 {
+        margin: 0;
+      }
+
+      time {
+        position: static;
+
+        display: block;
+      }
+
+      topic {
+        position: static;
+
+        display: block;
+      }
+
+    }
+
+
+    // Social sharing and comments
+    aside > div {
+      padding: @mBaseline / 2;
+    }
+
+    // Latest Articles
+
+    latest-article {
+      padding-top: @mBaseline;
+
+      article {
+        margin: 0 0 @mBaseline 0;
+        min-height: @mBaseline * 2;
+        padding: 0 @mBaseline 0 @mBaseline*3;
+        width: 100%;
+      }
+
+      img {
+        left: @mBaseline / 2;
+
+        height: @mBaseline* 2;
+        width: @mBaseline * 2;
+      }
+
+    }
+
+  }
+
+  // Styles for mobile portrait
+  @media(max-width: 320px) {
+
+    main footer {
+      p {
+        display: none;
+      }
+
+      time {
+        position: static;
+      }
+    }
+
+  }
+
+
+}

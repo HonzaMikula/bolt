@@ -1,0 +1,64 @@
+/* GENERAL */
+
+html,
+body {
+  position: relative;
+
+  min-height: 100%;
+
+  background: url(../img/texture.png);
+}
+
+// General typography
+
+html, body {
+  font-family: @fontSerif;
+  font-size: @baseFont;
+  line-height: @baseline;
+}
+
+header,
+h1, h2, h3, h4, h5, h6 {
+  font-family: @fontSans;
+}
+
+main a {
+  color: #006946;
+}
+
+.mobile {
+  display: none;
+}
+
+a:hover,
+a:focus {
+  text-decoration: none;
+}
+
+@media (max-width: @mobile) {
+
+  html, body {
+    font-size: @mBaseFont;
+    line-height: @mBaseline;
+  }
+
+  .mobile {
+    display: block;
+  }
+}
+
+
+// mixins
+
+.clearfix {
+  &:after {
+    clear: both;
+    display: table;
+
+    content: '';
+  }
+}
+
+input:-webkit-autofill {
+  background: inherit;
+}

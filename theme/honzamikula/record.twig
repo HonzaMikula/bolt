@@ -1,0 +1,207 @@
+{% extends "layout.twig" %}
+
+{% block title %}{{ record.title }} - Honza Mikula{% endblock %}
+{% block description %}{{ record.teaser|striptags }}{% endblock %}
+{% block body_id %}article{% endblock %}
+
+{% block open_graph %}
+  <meta property="og:title" content="{{ record.title }}" />
+  <meta property="og:url" content="{{ paths.currenturl }}/" />
+  {% if record.image %}
+    <meta property="og:image" content="{{ paths.hosturl }}{{ thumbnail(record.image, 713, 0) }}" />
+  {% endif %}
+  <meta property="og:type" content="article" />
+
+  <meta property="twitter:card" content="summary" />
+  <meta property="twitter:site" content="@janmikula" />
+  <meta property="twitter:title" content="{{ record.title }}" />
+  <meta property="twitter:description" content="{{ record.teaser|striptags }}" />
+  {% if record.image %}
+    <meta property="twitter:image" content="{{ paths.hosturl }}{{ thumbnail(record.image, 713, 0) }}" />
+  {% endif %}
+  <meta property="twitter:url" content="{{ paths.currenturl }}/" />
+{% endblock %}
+
+{% block body %}
+  <main itemscope itemtype="http://schema.org/Article">
+
+   {% setcontent mythemes = 'themes/latest/1' %}
+   {% for mytheme in mythemes %}
+    <nav>
+      <a href="{{ paths.rooturl }}" title="Domů" aria-label="Na hlavní stránku" style="background-image: url({{ thumbnail(mytheme.image_nav, 130, 130) }});"></a>
+    </nav>
+
+     <article aria-label="Obsah článku">
+
+       <h1 itemprop="name">{{ record.title }}</h1>
+
+       {% if record.image!="" %}
+         <img src="{{ thumbnail(record.image, 1426, 0) }}"
+              srcset="{{ thumbnail(record.image, 713, 0) }} 1x, {{ thumbnail(record.image, 1426, 0) }} 2x"
+              width="713" itemprop="image">
+       {% endif %}
+
+       <div itemprop="articleBody">
+         {{ record.body }}
+
+         {% if record.gallery %}
+           <p>
+           {% for image in record.gallery %}
+             <img src="{{ thumbnail(image, 1426, 0) }}"
+                  srcset="{{ thumbnail(image, 713, 0) }} 1x, {{ thumbnail(image, 1426, 0) }} 2x"
+                  width="713" itemprop="image">
+           {% endfor %}
+           </p>
+         {% endif %}
+       </div>
+
+       <footer>
+
+         <author itemprop="author" aria-label="Autor článku">
+           <span>
+             <img src="{{ paths.theme }}img/jan-mikula-108x108.png"
+                  srcset="{{ paths.theme }}img/jan-mikula-54x54.png 1x, {{ paths.theme }}img/jan-mikula-54x54.png 2x"
+                  width="54" height="54"
+                  alt="Jan Mikula" itemprop="image" />
+           </span>
+           <h2 itemprop="name">Honza Mikula</h2>
+           <p>
+             <a href="https://www.twitter.com/janmikula">Twitter</a>,
+             <a href="https://www.facebook.com/mikulajan">Facebook</a>,
+             <a href="https://www.linkedin.com/in/janmikula">LinkedIn</a>
+           </p>
+         </author>
+
+         <time aria-label="Datum vydání článku" datetime="{{ record.datepublish }}" itemprop="datePublished">{{ record.datepublish|localdate("%d. %m. %Y") }}</time>
+
+         {% if article.taxonomy.categories is defined %}
+           <topic>
+             {% for categorySlug, categoryName in article.taxonomy.categories %}
+               <a href="{{ categorySlug }}">{{ categoryName }}</a>{% if not loop.last %}, {% endif %}
+             {% endfor %}
+           </topic>
+         {% endif %}
+
+       </footer>
+
+     </article>
+
+    </main>
+
+    <aside>
+      <div>
+        <ul id="social" aria-label="Sdílet na sociálních sítí">
+          <li>
+            <div class="fb-like" data-width="100" data-colorscheme="light" data-layout="box_count" data-href="{{ paths.currenturl }}/" data-action="like" data-show-faces="true" data-send="false" data-count="vertical"></div>
+          </li>
+          <li>
+            <a href="https://twitter.com/share" class="twitter-share-button" data-count="vertical" data-via="janmikula" data-lang="cs" data-url="{{ paths.currenturl }}/">Tweet</a>
+          </li>
+          <li>
+            <div class="g-plusone" data-size="tall"></div>
+          </li>
+          <li>
+            <div class="kindleWidget" style="display:inline-block;padding:3px;cursor:pointer;font-size:18px;font-family:Arial;white-space:nowrap;line-height:1;"><img style="vertical-align:middle;margin:0;padding:0;border:none;" src="https://d1xnn692s7u6t6.cloudfront.net/white-25.png" /><span style="vertical-align:middle;margin-left:3px;">Send to Kindle</span></div>
+          </li>
+        </ul>
+
+        <div aria-label="Komentovat článek" itemprop="comment" class="fb-comments" data-href="{{ paths.currenturl }}/" data-numposts="5" data-width="680"></div>
+      </div>
+    </aside>
+
+    <latest-article role="complementary">
+      {% setcontent latest_articles = "articles/latest/3" where { id: "!"~record.id } %}
+      {% for article in latest_articles %}
+        <article {% if article.image=="" %}class="no-image"{% endif %}>
+          <h2><a href="{{ article.slug }}">{{ article.title }}</a></h2>
+          {% if article.image!="" %}
+            <a href="{{ article.slug }}">
+              <img src="{{ thumbnail(article.image, 162, 162) }}"
+                   srcset="{{ thumbnail(article.image, 81, 81) }} 1x, {{ thumbnail(article.image, 162, 162) }} 2x"
+                   width="81" height="81">
+            </a>
+          {% endif %}
+          <p>
+            {% if article.taxonomy.categories is defined %}
+              <topic>
+                {% for categorySlug, categoryName  in article.taxonomy.categories %}
+                  <a href="{{ categorySlug }}">{{ categoryName }}</a>{% if not loop.last %}, {% endif %}
+                {% endfor %}
+              </topic>
+            {% endif %}
+          </p>
+        </article>
+      {% endfor %}
+    </latest-article>
+
+    <footer aria-label="Informace o webu" style="background-image: url({{ thumbnail(mytheme.image_footer, 0, 850) }})">
+      <div>
+        <h2><a href="{{ paths.rooturl }}">Honza Mikula</a></h2>
+        <p>
+          Jsem fanoušek <a href="http://www.mises.cz">povídavé ekonomie</a>, kognitivní psychologie a UX. Líbí se mi
+          koncepty jako <a href="http://www.svobodauceni.cz">svoboda učení</a> a <a href="http://www.svobodavpraci.cz">svoboda v práci</a>.
+        </p>
+
+        <form action="//honzamikula.us8.list-manage.com/subscribe/post?u=0aa8c0b091d21d477832fbe62&amp;id=2eb1714fea" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate aria-label="Odebírat články emailem">
+          <h3>Zasílat články emailem</h3>
+          <div style="position: absolute; left: -5000px;"><input type="text" name="b_0aa8c0b091d21d477832fbe62_2eb1714fea" tabindex="-1" value=""></div>
+          <div>
+            <input type="email" value="@" name="EMAIL">
+            <input type="submit" name="subscribe" value="Přihlásit">
+          </div>
+        </form>
+
+        <social>
+          <a class="mobile" href="http://eepurl.com/X7Flj">@</a>
+          <a href="https://www.twitter.com/janmikula">t</a>
+          <a href="https://www.facebook.com/mikulajan">f</a>
+          <a href="https://www.linkedin.com/in/janmikula">ln</a>
+          <a href="/rss/feed.rss">rss</a>
+        </social>
+      </div>
+      <p>{{ mytheme.title }}</p>
+    </footer>
+    {% endfor %}
+
+    <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+    <script>
+      window.___gcfg = {lang: 'cs'};
+
+      (function() {
+        var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+        po.src = 'https://apis.google.com/js/plusone.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+      })();
+    </script>
+    <script src="https://d1xnn692s7u6t6.cloudfront.net/widget.js"></script>
+    <script>(function k(){window.$SendToKindle&&window.$SendToKindle.Widget?$SendToKindle.Widget.init({}):setTimeout(k,500);})();</script>
+
+    <div id="fb-root"></div>
+    <script>
+    window.fbAsyncInit = function() {
+        // init the FB JS SDK
+        FB.init({
+          appId      : '316695668490565',                        // App ID from the app dashboard
+          status     : true,                                 // Check Facebook Login status
+          xfbml      : true                                  // Look for social plugins on the page
+        });
+
+        // Additional initialization code such as adding Event Listeners goes here
+      };
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) return;
+      js = d.createElement(s); js.id = id;
+      js.src = "//connect.facebook.net/cs_CZ/all.js#xfbml=1&appId=424516304229139";
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+    </script>
+{% endblock %}
+
+{% block js_end_body %}
+  <script>
+    $(document).ready(function () {
+      window.app.initArticle();
+    });
+  </script>
+{% endblock %}

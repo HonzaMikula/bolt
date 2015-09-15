@@ -5,9 +5,9 @@ app/config/extensions/
 app/database/*
 *config.yml
 files/*
-extensions/*
+#extensions/*
 thumbs/
-vendor/
+#vendor/
 phpunit.xml
 
 # Unless you want to store vendor's "state" in your Git repo.

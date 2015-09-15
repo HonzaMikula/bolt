@@ -1,0 +1,9 @@
+{
+  "name": "scrumux",
+  "version": "0.1.0",
+  "directory": "/lib",
+  "dependencies": {
+    "jquery": "2.1.0",
+    "html5shiv": "*"
+  }
+}

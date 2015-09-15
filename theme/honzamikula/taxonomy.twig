@@ -1,0 +1,43 @@
+{% extends "index.twig" %}
+
+{% block title %}{{ slug }} - Honza Mikula{% endblock %}
+{% block description %}Výpis článků z kategorie {{ slug }}.{% endblock %}
+
+{% block header_heading %}<a href="{{ paths.rooturl }}">Honza Mikula</a>{% endblock %}
+{% block main_class %}listing{% endblock %}
+
+{% block listing %}
+
+  {% if taxonomytype is defined %}
+     <h1>{% if taxonomy.options[slug] is defined %}
+            {{ taxonomy.options[slug] }}
+         {% else %}
+            {{ slug }}
+         {% endif %}
+     </h1>
+
+
+    {% setcontent articles = 'articles/latest/7' where { categories: slug } allowpaging %}
+    {% set records = records|order(app.config.get('general/listing_sort')) %}
+    {% for article in articles %}
+      <article>
+          <header>
+            <time datetime="{{ article.datepublish }}">{{ article.datepublish|localdate("%d. %m. %Y") }}</time>
+          </header>
+          <h2><a href="{{ article.slug }}">{{ article.title }}</a></h2>
+          {% if article.image!="" %}
+          <figure>
+            <a href="{{ article.slug }}">
+              <img src="{{ thumbnail(article.image, 1186, 648) }}"
+                   srcset="{{ thumbnail(article.image, 593, 324) }} 1x, {{ thumbnail(article.image, 1186, 648) }} 2x"
+                   width="593" height="324">
+            </a>
+          </figure>
+          {% endif %}
+          {{ article.teaser}}
+      </article>
+    {% endfor %}
+
+    {{ pager('', 10, 'templates/pagination.twig') }}
+  {% endif %}
+{% endblock %}

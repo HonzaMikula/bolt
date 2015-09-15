@@ -1,0 +1,35 @@
+{
+    "require": {
+        "bolt/rssfeed": "dev-master",
+        "bolt/sitemap": "dev-master",
+        "foundrycode/boltredirector": "dev-master"
+    },
+    "repositories": {
+        "bolt": {
+            "type": "composer",
+            "url": "https://extensions.bolt.cm/satis/"
+        },
+        "packagist": false
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "provide": {
+        "bolt/bolt": "2.2.0"
+    },
+    "scripts": {
+        "post-package-install": "Bolt\\Composer\\ExtensionInstaller::handle",
+        "post-package-update": "Bolt\\Composer\\ExtensionInstaller::handle"
+    },
+    "extra": {
+        "bolt-web-path": ".././"
+    },
+    "autoload": {
+        "psr-4": {
+            "Bolt\\Composer\\": ""
+        }
+    },
+    "config": {
+        "discard-changes": true,
+        "preferred-install": "dist"
+    }
+}

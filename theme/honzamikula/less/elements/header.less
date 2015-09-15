@@ -1,0 +1,226 @@
+/* HEADER */
+
+// Local Variables
+
+@headerWidth: 400px; // also in homepage.less
+@themeColor: #fff;
+
+
+// Styles
+
+body > header {
+  position: fixed;
+  left: 0;
+  top: 0;
+
+  height: 100%;
+  width: @headerWidth;
+
+  background: #3074b5 url(../img/topic1/header.jpg) center center no-repeat;
+  background-size: cover;
+  color: @themeColor;
+  image-rendering: pixelated;
+
+  > div {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+
+    padding: @baseline;
+  }
+
+  h1 {
+    font-size: 30px;
+    line-height: @baseline * 2;
+  }
+
+  h2 {
+    font-size: 18px;
+  }
+
+  p {
+    margin: 0 0 @baseline 0;
+
+    font-weight: 100;
+  }
+
+  a {
+    color: @themeColor;
+
+    text-decoration: underline;
+  }
+
+
+  // Social buttons
+  social {
+    a {
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 100%;
+      display: inline-block;
+      float: left;
+      height: @baseline*1.5;
+      margin: 0 @baseline/2 0 0;
+      width: @baseline*1.5;
+
+      background: rgba(255, 255, 255, 0.25);
+
+      font-weight: bold;
+      line-height: @baseline*1.5;
+      text-align: center;
+      text-decoration: none;
+
+      transition: all 0.3s;
+
+      &:hover {
+        border: 1px solid @themeColor;
+
+        background: transparent;
+      }
+    }
+  }
+
+
+  // Subscribe newsletter form
+  form {
+
+    clear: both;
+    margin: 0 0 @baseline 0;
+
+    div {
+      position: relative;
+    }
+
+    input[type=email],
+    input[type=text] {
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 6px;
+      box-sizing: border-box;
+      height: @baseline * 1.5;
+      padding: 0 110px 0 @baseline/2;
+      width: 100%;
+
+      background: rgba(255, 255, 255, 0.25);
+      color: @themeColor;
+
+      font-size: @baseFont;
+      font-weight: bold;
+
+      -webkit-appearance: none;
+         -moz-appearance: none;
+    }
+
+    input[type=submit] {
+      position: absolute;
+      top: 0;
+      right: -1px;
+
+      border: 0;
+      border-radius: 0 6px 6px 0;
+      height: @baseline * 1.5;
+      padding: 0 @baseline/2;
+
+      background: rgba(255, 255, 255, 0.25);
+      color: @themeColor;
+
+      font-family: @fontSans;
+      font-size: @baseFont;
+      font-weight: bold;
+
+      -webkit-appearance: none;
+         -moz-appearance: none;
+      cursor: pointer;
+      transition: 0.2s background;
+
+      &:hover,
+      &:focus {
+        background: rgba(255, 255, 255, 0.5);
+      }
+    }
+  }
+
+
+  > p {
+    padding: 0 @baseline;
+
+    font-size: 12px;
+    line-height: @baseline * 2;
+    font-style: italic;
+  }
+
+
+  // Styles for small screen
+
+  @media (max-width: 1065px) {
+
+    position: relative;
+
+    height: 50vh;
+    max-height: 400px;
+    width: 100%;
+
+    > div {
+      left: 50%;
+      width: 50%;
+
+      text-align: center;
+
+      transform: translateX(-50%);
+
+      p {
+        margin: 0 -@baseline*3 @baseline -@baseline*3;
+      }
+    }
+
+    social {
+      display: table;
+      margin: 0 auto;
+
+      a:last-of-type {
+        margin: 0;
+      }
+    }
+
+  }
+
+
+  // Styles for mobile
+
+  @media (max-width: @mobile) {
+
+    height: 99vh;
+    max-height: inherit;
+
+    > div {
+      left: 0;
+      padding: @mBaseline / 2;
+      width: auto;
+
+      transform: inherit;
+
+      p {
+        margin: 0 0 @baseline 0;
+      }
+    }
+
+    h1 {
+      font-size: 24px;
+      line-height: @mBaseline * 2;
+    }
+
+    h2 {
+      font-size: 16px;
+    }
+
+    p {
+      margin: 0 0 @mBaseline 0;
+
+      font-weight: 100;
+    }
+
+    form {
+      display: none;
+    }
+
+  }
+}
+
