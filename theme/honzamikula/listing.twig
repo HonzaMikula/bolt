@@ -7,16 +7,14 @@
 {% block main_class %}listing{% endblock %}
 
 {% block listing %}
-         {{ slug }}
-         {{taxonomy.options[slug]}}
   {% if taxonomytype is defined %}
-     <h1>{% if taxonomy.options[slug] is defined %}
-            {{ taxonomy.options[slug] }}
-         {% else %}
-            {{ slug }}
-         {% endif %}
+     <h1>
+       {% if taxonomy.options[slug] is defined %}
+          {{ taxonomy.options[slug] }}
+       {% else %}
+          {{ slug }}
+       {% endif %}
      </h1>
-
 
     {% setcontent articles = 'articles/latest/7' where { categories: slug } allowpaging %}
     {% set records = records|order(app.config.get('general/listing_sort')) %}
