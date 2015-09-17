@@ -178,7 +178,11 @@ body > header {
   background: #3074b5 url(../img/topic1/header.jpg) center center no-repeat;
   background-size: cover;
   color: #ffffff;
-  image-rendering: pixelated;
+  -ms-interpolation-mode: nearest-neighbor;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: -o-pixelated;
+      image-rendering: pixelated;
 }
 body > header > div {
   position: absolute;
@@ -232,8 +236,7 @@ body > header form input[type=email],
 body > header form input[type=text] {
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 6px;
-  -moz-box-sizing: border-box;
-       box-sizing: border-box;
+  box-sizing: border-box;
   height: 40.5px;
   padding: 0 110px 0 13.5px;
   width: 100%;
@@ -305,12 +308,13 @@ body > header > p {
     max-height: inherit;
   }
   body > header > div {
+    bottom: 50%;
     left: 0;
     padding: 12px;
     width: auto;
-    -webkit-transform: inherit;
-        -ms-transform: inherit;
-            transform: inherit;
+    -webkit-transform: translate(0, 50%);
+        -ms-transform: translate(0, 50%);
+            transform: translate(0, 50%);
   }
   body > header > div p {
     margin: 0 0 27px 0;
@@ -337,7 +341,11 @@ body > footer {
   background: #6caddd url(../img/topic1/footer.jpg) center center no-repeat;
   background-size: cover;
   color: #fff;
-  image-rendering: pixelated;
+  -ms-interpolation-mode: nearest-neighbor;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: -o-pixelated;
+      image-rendering: pixelated;
   font-family: 'Open Sans', Calibri, Arial, sans-serif;
   text-align: center;
 }
@@ -398,8 +406,7 @@ body > footer form input[type=email],
 body > footer form input[type=text] {
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 6px;
-  -moz-box-sizing: border-box;
-       box-sizing: border-box;
+  box-sizing: border-box;
   height: 36px;
   padding: 0 110px 0 12px;
   width: 100%;
@@ -536,8 +543,7 @@ pagination .prev a:focus {
   }
 }
 #homepage main {
-  -moz-box-sizing: border-box;
-       box-sizing: border-box;
+  box-sizing: border-box;
   padding: 27px;
   width: 647px;
   background: #fff;
@@ -657,7 +663,11 @@ pagination .prev a:focus {
   background: url(../img/topic1/home.jpg) center center no-repeat;
   background-size: 54px 54px;
   color: transparent;
-  image-rendering: pixelated;
+  -ms-interpolation-mode: nearest-neighbor;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: -o-pixelated;
+      image-rendering: pixelated;
   font-family: 'Open Sans', Calibri, Arial, sans-serif;
   font-size: 14px;
   font-weight: bold;
@@ -693,8 +703,7 @@ pagination .prev a:focus {
   opacity: 1;
 }
 #article main {
-  -moz-box-sizing: border-box;
-       box-sizing: border-box;
+  box-sizing: border-box;
   padding: 27px;
   margin: 0 auto;
   max-width: 767px;
@@ -784,8 +793,7 @@ pagination .prev a:focus {
   background: #eee;
 }
 #article aside > div {
-  -moz-box-sizing: border-box;
-       box-sizing: border-box;
+  box-sizing: border-box;
   min-height: 317px;
   padding: 27px;
   margin: 0 auto;
@@ -802,8 +810,7 @@ pagination .prev a:focus {
 }
 #article latest-article article {
   position: relative;
-  -moz-box-sizing: border-box;
-       box-sizing: border-box;
+  box-sizing: border-box;
   display: table;
   margin: 0 auto 27px auto;
   min-height: 81px;
