@@ -55,7 +55,7 @@
               {% if article.taxonomy.categories is defined %}
                 <topic>
                   {% for categorySlug, categoryName  in article.taxonomy.categories %}
-                    <a href="/{{ categorySlug }}/">{{ categoryName }}</a>{% if not loop.last %}, {% endif %}
+                    <a href="{{ categorySlug }}/">{{ categoryName }}</a>{% if not loop.last %}, {% endif %}
                   {% endfor %}
                 </topic>
               {% endif %}
