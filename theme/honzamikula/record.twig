@@ -113,9 +113,9 @@
       {% setcontent latest_articles = "articles/latest/3" where { id: "!"~record.id } %}
       {% for article in latest_articles %}
         <article {% if article.image=="" %}class="no-image"{% endif %}>
-          <h2><a href="{{ article.slug }}">{{ article.title }}</a></h2>
+          <h2><a href="/{{ article.slug }}/">{{ article.title }}</a></h2>
           {% if article.image!="" %}
-            <a href="{{ article.slug }}">
+            <a href="/{{ article.slug }}/">
               <img src="{{ thumbnail(article.image, 162, 162) }}"
                    srcset="{{ thumbnail(article.image, 81, 81) }} 1x, {{ thumbnail(article.image, 162, 162) }} 2x"
                    width="81" height="81">
@@ -125,7 +125,7 @@
             {% if article.taxonomy.categories is defined %}
               <topic>
                 {% for categorySlug, categoryName  in article.taxonomy.categories %}
-                  <a href="{{ categorySlug }}">{{ categoryName }}</a>{% if not loop.last %}, {% endif %}
+                  <a href="/{{ categorySlug }}/">{{ categoryName }}</a>{% if not loop.last %}, {% endif %}
                 {% endfor %}
               </topic>
             {% endif %}
