@@ -721,19 +721,22 @@ pagination .prev a:focus {
   font-size: 24px;
 }
 #article main h3 {
-  margin: 27px 0;
+  margin: 27px 0 13.5px 0;
   font-size: 18px;
 }
 #article main p,
 #article main ul {
   margin: 27px 0;
 }
+#article main ol {
+  margin-bottom: 27px;
+}
 #article main ul li {
   margin: 0 0 0 27px;
   list-style: disc;
 }
 #article main ol li {
-  margin: 0 0 27px 27px;
+  margin: 0 0 13.5px 27px;
   list-style: decimal;
 }
 #article main blockquote p {
