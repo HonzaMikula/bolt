@@ -32,7 +32,7 @@ class Application extends Silex\Application
      */
     public function __construct(array $values = array())
     {
-        $values['bolt_version'] = '2.2.10';
+        $values['bolt_version'] = '2.2.11';
         $values['bolt_name'] = '';
         $values['bolt_released'] = true; // `true` for stable releases, `false` for alpha, beta and RC.
 
@@ -448,7 +448,7 @@ class Application extends Silex\Application
      */
     public function initMailCheck()
     {
-        if (!$this['config']->get('general/mailoptions') && $this['extensions']->hasMailSenders()) {
+        if ($this['users']->getCurrentuser() && !$this['config']->get('general/mailoptions') && $this['extensions']->hasMailSenders()) {
             $error = "One or more installed extensions need to be able to send email. Please set up the 'mailoptions' in config.yml.";
             $this['session']->getFlashBag()->add('error', Trans::__($error));
         }
