@@ -64,7 +64,7 @@
             <h2><a href="/{{ article.slug }}/">{{ article.title }}</a></h2>
             {% if article.image!="" %}
               <figure>
-                <a href="/{{ article.slug }}.">
+                <a href="/{{ article.slug }}/">
                   <img src="{{ thumbnail(article.image, 1186, 648) }}"
                        srcset="{{ thumbnail(article.image, 593, 324) }} 1x, {{ thumbnail(article.image, 1186, 648) }} 2x"
                        width="593" height="324">
