@@ -43,8 +43,8 @@ class RepositoryManager
     /**
      * Searches for a package by it's name and version in managed repositories.
      *
-     * @param string                                                          $name       package name
-     * @param string|\Composer\Package\LinkConstraint\LinkConstraintInterface $constraint package version or version constraint to match against
+     * @param string                                                 $name       package name
+     * @param string|\Composer\Semver\Constraint\ConstraintInterface $constraint package version or version constraint to match against
      *
      * @return PackageInterface|null
      */
@@ -60,8 +60,8 @@ class RepositoryManager
     /**
      * Searches for all packages matching a name and optionally a version in managed repositories.
      *
-     * @param string                                                          $name       package name
-     * @param string|\Composer\Package\LinkConstraint\LinkConstraintInterface $constraint package version or version constraint to match against
+     * @param string                                                 $name       package name
+     * @param string|\Composer\Semver\Constraint\ConstraintInterface $constraint package version or version constraint to match against
      *
      * @return array
      */
@@ -91,8 +91,8 @@ class RepositoryManager
      *
      * @param  string                    $type   repository type
      * @param  array                     $config repository configuration
-     * @return RepositoryInterface
      * @throws \InvalidArgumentException if repository for provided type is not registered
+     * @return RepositoryInterface
      */
     public function createRepository($type, $config)
     {

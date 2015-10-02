@@ -34,7 +34,7 @@ use Composer\Json\JsonFile;
 use Composer\Package\AliasPackage;
 use Composer\Package\CompletePackage;
 use Composer\Package\Link;
-use Composer\Package\LinkConstraint\VersionConstraint;
+use Composer\Semver\Constraint\Constraint;
 use Composer\Package\Locker;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
@@ -103,6 +103,7 @@ class Installer
     protected $preferSource = false;
     protected $preferDist = false;
     protected $optimizeAutoloader = false;
+    protected $classMapAuthoritative = false;
     protected $devMode = false;
     protected $dryRun = false;
     protected $verbose = false;
@@ -159,9 +160,8 @@ class Installer
     /**
      * Run installation (or update)
      *
-     * @return int 0 on success or a positive error code on failure
-     *
      * @throws \Exception
+     * @return int        0 on success or a positive error code on failure
      */
     public function run()
     {
@@ -335,6 +335,7 @@ class Installer
                 }
 
                 $this->autoloadGenerator->setDevMode($this->devMode);
+                $this->autoloadGenerator->setClassMapAuthoritative($this->classMapAuthoritative);
                 $this->autoloadGenerator->dump($this->config, $localRepo, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloader);
             }
 
@@ -356,11 +357,11 @@ class Installer
     }
 
     /**
-     * @param RepositoryInterface $localRepo
-     * @param RepositoryInterface $installedRepo
-     * @param PlatformRepository $platformRepo
-     * @param array $aliases
-     * @param bool $withDevReqs
+     * @param  RepositoryInterface $localRepo
+     * @param  RepositoryInterface $installedRepo
+     * @param  PlatformRepository  $platformRepo
+     * @param  array               $aliases
+     * @param  bool                $withDevReqs
      * @return int
      */
     protected function doInstall($localRepo, $installedRepo, $platformRepo, $aliases, $withDevReqs)
@@ -426,7 +427,7 @@ class Installer
                     && $this->installationManager->isPackageInstalled($localRepo, $package)
                 ) {
                     $removedUnstablePackages[$package->getName()] = true;
-                    $request->remove($package->getName(), new VersionConstraint('=', $package->getVersion()));
+                    $request->remove($package->getName(), new Constraint('=', $package->getVersion()));
                 }
             }
         }
@@ -465,7 +466,7 @@ class Installer
                     foreach ($currentPackages as $curPackage) {
                         if ($curPackage->getName() === $candidate) {
                             if (!$this->isUpdateable($curPackage) && !isset($removedUnstablePackages[$curPackage->getName()])) {
-                                $constraint = new VersionConstraint('=', $curPackage->getVersion());
+                                $constraint = new Constraint('=', $curPackage->getVersion());
                                 $request->install($curPackage->getName(), $constraint);
                             }
                             break;
@@ -485,7 +486,7 @@ class Installer
                 if (isset($aliases[$package->getName()][$version])) {
                     $version = $aliases[$package->getName()][$version]['alias_normalized'];
                 }
-                $constraint = new VersionConstraint('=', $version);
+                $constraint = new Constraint('=', $version);
                 $constraint->setPrettyString($package->getPrettyVersion());
                 $request->install($package->getName(), $constraint);
             }
@@ -698,8 +699,8 @@ class Installer
     }
 
     /**
-     * @param bool $withDevReqs
-     * @param RepositoryInterface|null $lockedRepository
+     * @param  bool                     $withDevReqs
+     * @param  RepositoryInterface|null $lockedRepository
      * @return Pool
      */
     private function createPool($withDevReqs, RepositoryInterface $lockedRepository = null)
@@ -710,7 +711,7 @@ class Installer
 
             $requires = array();
             foreach ($lockedRepository->getPackages() as $package) {
-                $constraint = new VersionConstraint('=', $package->getVersion());
+                $constraint = new Constraint('=', $package->getVersion());
                 $constraint->setPrettyString($package->getPrettyVersion());
                 $requires[$package->getName()] = $constraint;
             }
@@ -764,15 +765,15 @@ class Installer
     }
 
     /**
-     * @param RootPackageInterface $rootPackage
-     * @param PlatformRepository   $platformRepo
+     * @param  RootPackageInterface $rootPackage
+     * @param  PlatformRepository   $platformRepo
      * @return Request
      */
     private function createRequest(RootPackageInterface $rootPackage, PlatformRepository $platformRepo)
     {
         $request = new Request();
 
-        $constraint = new VersionConstraint('=', $rootPackage->getVersion());
+        $constraint = new Constraint('=', $rootPackage->getVersion());
         $constraint->setPrettyString($rootPackage->getPrettyVersion());
         $request->install($rootPackage->getName(), $constraint);
 
@@ -786,7 +787,7 @@ class Installer
         // to prevent the solver trying to remove or update those
         $provided = $rootPackage->getProvides();
         foreach ($fixedPackages as $package) {
-            $constraint = new VersionConstraint('=', $package->getVersion());
+            $constraint = new Constraint('=', $package->getVersion());
             $constraint->setPrettyString($package->getPrettyVersion());
 
             // skip platform packages that are provided by the root package
@@ -802,16 +803,16 @@ class Installer
     }
 
     /**
-     * @param WritableRepositoryInterface $localRepo
-     * @param Pool                        $pool
-     * @param PolicyInterface             $policy
-     * @param array                       $repositories
-     * @param RepositoryInterface         $installedRepo
-     * @param RepositoryInterface         $lockedRepository
-     * @param bool                        $installFromLock
-     * @param bool                        $withDevReqs
-     * @param string                      $task
-     * @param array|null                  $operations
+     * @param  WritableRepositoryInterface $localRepo
+     * @param  Pool                        $pool
+     * @param  PolicyInterface             $policy
+     * @param  array                       $repositories
+     * @param  RepositoryInterface         $installedRepo
+     * @param  RepositoryInterface         $lockedRepository
+     * @param  bool                        $installFromLock
+     * @param  bool                        $withDevReqs
+     * @param  string                      $task
+     * @param  array|null                  $operations
      * @return array
      */
     private function processDevPackages($localRepo, $pool, $policy, $repositories, $installedRepo, $lockedRepository, $installFromLock, $withDevReqs, $task, array $operations = null)
@@ -891,7 +892,7 @@ class Installer
                     }
 
                     // find similar packages (name/version) in all repositories
-                    $matches = $pool->whatProvides($package->getName(), new VersionConstraint('=', $package->getVersion()));
+                    $matches = $pool->whatProvides($package->getName(), new Constraint('=', $package->getVersion()));
                     foreach ($matches as $index => $match) {
                         // skip local packages
                         if (!in_array($match->getRepository(), $repositories, true)) {
@@ -946,8 +947,8 @@ class Installer
 
     /**
      * Loads the most "current" list of packages that are installed meaning from lock ideally or from installed repo as fallback
-     * @param bool                $withDevReqs
-     * @param RepositoryInterface $installedRepo
+     * @param  bool                $withDevReqs
+     * @param  RepositoryInterface $installedRepo
      * @return array
      */
     private function getCurrentPackages($withDevReqs, $installedRepo)
@@ -980,7 +981,7 @@ class Installer
         foreach ($aliases as $alias) {
             $normalizedAliases[$alias['package']][$alias['version']] = array(
                 'alias' => $alias['alias'],
-                'alias_normalized' => $alias['alias_normalized']
+                'alias_normalized' => $alias['alias_normalized'],
             );
         }
 
@@ -1001,7 +1002,7 @@ class Installer
 
         foreach ($localRepo->getCanonicalPackages() as $package) {
             // find similar packages (name/version) in all repositories
-            $matches = $pool->whatProvides($package->getName(), new VersionConstraint('=', $package->getVersion()));
+            $matches = $pool->whatProvides($package->getName(), new Constraint('=', $package->getVersion()));
             foreach ($matches as $index => $match) {
                 // skip local packages
                 if (!in_array($match->getRepository(), $repositories, true)) {
@@ -1023,7 +1024,15 @@ class Installer
                 $newPackage = $pool->literalToPackage($matches[0]);
 
                 // update the dist and source URLs
-                $package->setSourceUrl($newPackage->getSourceUrl());
+                $sourceUrl = $package->getSourceUrl();
+                $newSourceUrl = $newPackage->getSourceUrl();
+
+                if ($sourceUrl !== $newSourceUrl) {
+                    $package->setSourceType($newPackage->getSourceType());
+                    $package->setSourceUrl($newSourceUrl);
+                    $package->setSourceReference($newPackage->getSourceReference());
+                }
+
                 // only update dist url for github/bitbucket dists as they use a combination of dist url + dist reference to install
                 // but for other urls this is ambiguous and could result in bad outcomes
                 if (preg_match('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com)/}', $newPackage->getDistUrl())) {
@@ -1052,7 +1061,7 @@ class Installer
     }
 
     /**
-     * @param PackageInterface $package
+     * @param  PackageInterface $package
      * @return bool
      */
     private function isUpdateable(PackageInterface $package)
@@ -1085,7 +1094,7 @@ class Installer
     }
 
     /**
-     * @param array $links
+     * @param  array $links
      * @return array
      */
     private function extractPlatformRequirements($links)
@@ -1108,7 +1117,7 @@ class Installer
      * update whitelist themselves.
      *
      * @param RepositoryInterface $localRepo
-     * @param boolean             $devMode
+     * @param bool                $devMode
      * @param array               $rootRequires    An array of links to packages in require of the root package
      * @param array               $rootDevRequires An array of links to packages in require-dev of the root package
      */
@@ -1241,7 +1250,7 @@ class Installer
     }
 
     /**
-     * @param RepositoryInterface $additionalInstalledRepository
+     * @param  RepositoryInterface $additionalInstalledRepository
      * @return $this
      */
     public function setAdditionalInstalledRepository(RepositoryInterface $additionalInstalledRepository)
@@ -1254,7 +1263,7 @@ class Installer
     /**
      * Whether to run in drymode or not
      *
-     * @param  boolean   $dryRun
+     * @param  bool      $dryRun
      * @return Installer
      */
     public function setDryRun($dryRun = true)
@@ -1277,7 +1286,7 @@ class Installer
     /**
      * prefer source installation
      *
-     * @param  boolean   $preferSource
+     * @param  bool      $preferSource
      * @return Installer
      */
     public function setPreferSource($preferSource = true)
@@ -1290,7 +1299,7 @@ class Installer
     /**
      * prefer dist installation
      *
-     * @param  boolean   $preferDist
+     * @param  bool      $preferDist
      * @return Installer
      */
     public function setPreferDist($preferDist = true)
@@ -1309,6 +1318,29 @@ class Installer
     public function setOptimizeAutoloader($optimizeAutoloader = false)
     {
         $this->optimizeAutoloader = (boolean) $optimizeAutoloader;
+        if (!$this->optimizeAutoloader) {
+            // Force classMapAuthoritative off when not optimizing the
+            // autoloader
+            $this->setClassMapAuthoritative(false);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Whether or not generated autoloader considers the class map
+     * authoritative.
+     *
+     * @param  bool      $classMapAuthoritative
+     * @return Installer
+     */
+    public function setClassMapAuthoritative($classMapAuthoritative = false)
+    {
+        $this->classMapAuthoritative = (boolean) $classMapAuthoritative;
+        if ($this->classMapAuthoritative) {
+            // Force optimizeAutoloader when classmap is authoritative
+            $this->setOptimizeAutoloader(true);
+        }
 
         return $this;
     }
@@ -1316,7 +1348,7 @@ class Installer
     /**
      * update packages
      *
-     * @param  boolean   $update
+     * @param  bool      $update
      * @return Installer
      */
     public function setUpdate($update = true)
@@ -1329,7 +1361,7 @@ class Installer
     /**
      * enables dev packages
      *
-     * @param  boolean   $devMode
+     * @param  bool      $devMode
      * @return Installer
      */
     public function setDevMode($devMode = true)
@@ -1342,7 +1374,7 @@ class Installer
     /**
      * set whether to run autoloader or not
      *
-     * @param boolean $dumpAutoloader
+     * @param  bool      $dumpAutoloader
      * @return Installer
      */
     public function setDumpAutoloader($dumpAutoloader = true)
@@ -1355,7 +1387,7 @@ class Installer
     /**
      * set whether to run scripts or not
      *
-     * @param  boolean   $runScripts
+     * @param  bool      $runScripts
      * @return Installer
      */
     public function setRunScripts($runScripts = true)
@@ -1381,7 +1413,7 @@ class Installer
     /**
      * run in verbose mode
      *
-     * @param  boolean   $verbose
+     * @param  bool      $verbose
      * @return Installer
      */
     public function setVerbose($verbose = true)
@@ -1404,7 +1436,7 @@ class Installer
     /**
      * set ignore Platform Package requirements
      *
-     * @param  boolean   $ignorePlatformReqs
+     * @param  bool      $ignorePlatformReqs
      * @return Installer
      */
     public function setIgnorePlatformRequirements($ignorePlatformReqs = false)
@@ -1431,7 +1463,7 @@ class Installer
     /**
      * Should dependencies of whitelisted packages be updated recursively?
      *
-     * @param  boolean   $updateDependencies
+     * @param  bool      $updateDependencies
      * @return Installer
      */
     public function setWhitelistDependencies($updateDependencies = true)
@@ -1444,7 +1476,7 @@ class Installer
     /**
      * Should packages be preferred in a stable version when updating?
      *
-     * @param  boolean   $preferStable
+     * @param  bool      $preferStable
      * @return Installer
      */
     public function setPreferStable($preferStable = true)
@@ -1457,7 +1489,7 @@ class Installer
     /**
      * Should packages be preferred in a lowest version when updating?
      *
-     * @param  boolean   $preferLowest
+     * @param  bool      $preferLowest
      * @return Installer
      */
     public function setPreferLowest($preferLowest = true)

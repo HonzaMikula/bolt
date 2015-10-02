@@ -21,6 +21,7 @@ use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Util\Git as GitUtil;
 use Composer\IO\IOInterface;
+use Seld\JsonLint\ParsingException;
 
 /**
  * Reads/writes project lockfile (composer.lock).
@@ -244,7 +245,7 @@ class Locker
         $lock = array(
             '_readme' => array('This file locks the dependencies of your project to a known state',
                                'Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file',
-                               'This file is @gener'.'ated automatically'),
+                               'This file is @gener'.'ated automatically', ),
             'hash' => $this->hash,
             'content-hash' => $this->contentHash,
             'packages' => null,
@@ -286,7 +287,12 @@ class Locker
             return false;
         }
 
-        if (!$this->isLocked() || $lock !== $this->getLockData()) {
+        try {
+            $isLocked = $this->isLocked();
+        } catch (ParsingException $e) {
+            $isLocked = false;
+        }
+        if (!$isLocked || $lock !== $this->getLockData()) {
             $this->lockFile->write($lock);
             $this->lockDataCache = null;
 
@@ -420,6 +426,7 @@ class Locker
         }
 
         ksort($relevantContent);
+
         return md5(json_encode($relevantContent));
     }
 }

@@ -4,7 +4,7 @@
  *
  * PHP Version 5
  *
- * Copyright (c) 2008-2013, Manuel Pichler <mapi@pdepend.org>.
+ * Copyright (c) 2008-2015, Manuel Pichler <mapi@pdepend.org>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,14 +36,15 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- * @copyright 2008-2013 Manuel Pichler. All rights reserved.
- * @license   http://www.opensource.org/licenses/bsd-license.php BSD License
+ * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @license http://www.opensource.org/licenses/bsd-license.php BSD License
   */
 
 namespace PDepend;
 
 use PDepend\Input\CompositeFilter;
 use PDepend\Input\Filter;
+use PDepend\Input\Iterator;
 use PDepend\Metrics\AnalyzerCacheAware;
 use PDepend\Metrics\AnalyzerClassFileSystemLocator;
 use PDepend\Metrics\AnalyzerFactory;
@@ -68,8 +69,8 @@ use PDepend\Util\Configuration;
  * The PDepend is a php port/adaption of the Java class file analyzer
  * <a href="http://clarkware.com/software/JDepend.html">JDepend</a>.
  *
- * @copyright 2008-2013 Manuel Pichler. All rights reserved.
- * @license   http://www.opensource.org/licenses/bsd-license.php BSD License
+ * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  */
 class Engine
 {
@@ -619,7 +620,7 @@ class Engine
      * This method will create an iterator instance which contains all files
      * that are part of the parsing process.
      *
-     * @return Iterator
+     * @return \Iterator
      */
     private function createFileIterator()
     {
@@ -632,9 +633,12 @@ class Engine
 
         foreach ($this->directories as $directory) {
             $fileIterator->append(
-                new \PDepend\Input\Iterator(
+                new Iterator(
                     new \RecursiveIteratorIterator(
-                        new \RecursiveDirectoryIterator($directory . '/')
+                        new \RecursiveDirectoryIterator(
+                            $directory . '/',
+                            \RecursiveDirectoryIterator::FOLLOW_SYMLINKS
+                        )
                     ),
                     $this->fileFilter,
                     $directory

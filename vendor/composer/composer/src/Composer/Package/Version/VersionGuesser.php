@@ -15,6 +15,7 @@ namespace Composer\Package\Version;
 use Composer\Config;
 use Composer\Repository\Vcs\HgDriver;
 use Composer\IO\NullIO;
+use Composer\Semver\VersionParser as SemverVersionParser;
 use Composer\Util\Git as GitUtil;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Svn as SvnUtil;
@@ -38,7 +39,7 @@ class VersionGuesser
     private $process;
 
     /**
-     * @var VersionParser
+     * @var SemverVersionParser
      */
     private $versionParser;
 
@@ -47,7 +48,7 @@ class VersionGuesser
      * @param ProcessExecutor $process
      * @param VersionParser   $versionParser
      */
-    public function __construct(Config $config, ProcessExecutor $process, VersionParser $versionParser)
+    public function __construct(Config $config, ProcessExecutor $process, SemverVersionParser $versionParser)
     {
         $this->config = $config;
         $this->process = $process;
@@ -56,7 +57,7 @@ class VersionGuesser
 
     /**
      * @param array  $packageConfig
-     * @param string $path Path to guess into
+     * @param string $path          Path to guess into
      */
     public function guessVersion(array $packageConfig, $path)
     {

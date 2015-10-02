@@ -16,9 +16,8 @@ use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Package\Loader\ArrayLoader;
-use Composer\Package\Loader\LoaderInterface;
 use Composer\Package\Version\VersionGuesser;
-use Composer\Package\Version\VersionParser;
+use Composer\Semver\VersionParser;
 use Composer\Util\ProcessExecutor;
 
 /**
@@ -38,6 +37,10 @@ use Composer\Util\ProcessExecutor;
  *     {
  *         "type": "path",
  *         "url": "/absolute/path/to/package/"
+ *     },
+ *     {
+ *         "type": "path",
+ *         "url": "/absolute/path/to/several/packages/*"
  *     }
  * ]
  * @endcode
@@ -70,9 +73,9 @@ class PathRepository extends ArrayRepository
     /**
      * Initializes path repository.
      *
-     * @param array $repoConfig
+     * @param array       $repoConfig
      * @param IOInterface $io
-     * @param Config $config
+     * @param Config      $config
      */
     public function __construct(array $repoConfig, IOInterface $io, Config $config)
     {
@@ -97,36 +100,45 @@ class PathRepository extends ArrayRepository
     {
         parent::initialize();
 
-        $path = $this->getPath();
-        $composerFilePath = $path.'composer.json';
-        if (!file_exists($composerFilePath)) {
-            throw new \RuntimeException(sprintf('No `composer.json` file found in path repository "%s"', $path));
+        foreach ($this->getUrlMatches() as $url) {
+            $path = realpath($url) . '/';
+            $composerFilePath = $path.'composer.json';
+
+            if (!file_exists($composerFilePath)) {
+                continue;
+            }
+
+            $json = file_get_contents($composerFilePath);
+            $package = JsonFile::parseJson($json, $composerFilePath);
+            $package['dist'] = array(
+                'type' => 'path',
+                'url' => $url,
+                'reference' => '',
+            );
+
+            if (!isset($package['version'])) {
+                $package['version'] = $this->versionGuesser->guessVersion($package, $path) ?: 'dev-master';
+            }
+            if (is_dir($path.'/.git') && 0 === $this->process->execute('git log -n1 --pretty=%H', $output, $path)) {
+                $package['dist']['reference'] = trim($output);
+            }
+
+            $package = $this->loader->load($package);
+            $this->addPackage($package);
         }
 
-        $json = file_get_contents($composerFilePath);
-        $package = JsonFile::parseJson($json, $composerFilePath);
-        $package['dist'] = array(
-            'type' => 'path',
-            'url' => $this->url,
-            'reference' => '',
-        );
-
-        if (!isset($package['version'])) {
-            $package['version'] = $this->versionGuesser->guessVersion($package, $path) ?: 'dev-master';
+        if (count($this->getPackages()) == 0) {
+            throw new \RuntimeException(sprintf('No `composer.json` file found in any path repository in "%s"', $this->url));
         }
-        if (is_dir($path.'/.git') && 0 === $this->process->execute('git log -n1 --pretty=%H', $output, $path)) {
-            $package['dist']['reference'] = trim($output);
-        }
-
-        $package = $this->loader->load($package);
-        $this->addPackage($package);
     }
 
     /**
-     * @return string
+     * Get a list of all (possibly relative) path names matching given url (supports globbing).
+     *
+     * @return string[]
      */
-    private function getPath()
+    private function getUrlMatches()
     {
-        return realpath(rtrim($this->url, '/')) . '/';
+        return glob($this->url, GLOB_MARK | GLOB_ONLYDIR);
     }
 }

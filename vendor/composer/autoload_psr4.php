@@ -28,6 +28,7 @@ return array(
     'Eloquent\\Pathogen\\' => array($vendorDir . '/bolt/pathogen/src'),
     'Doctrine\\Instantiator\\' => array($vendorDir . '/doctrine/instantiator/src/Doctrine/Instantiator'),
     'Composer\\Spdx\\' => array($vendorDir . '/composer/spdx-licenses/src'),
+    'Composer\\Semver\\' => array($vendorDir . '/composer/semver/src'),
     'Codeception\\Extension\\' => array($vendorDir . '/codeception/codeception/ext'),
     'Codeception\\' => array($vendorDir . '/codeception/codeception/src/Codeception'),
     'Cocur\\Slugify\\' => array($vendorDir . '/cocur/slugify/src'),

@@ -238,17 +238,19 @@ EOT
             } elseif (strpos($settingKey, '.')) {
                 $bits = explode('.', $settingKey);
                 $data = $data['config'];
+                $match = false;
                 foreach ($bits as $bit) {
-                    if (isset($data[$bit])) {
-                        $data = $data[$bit];
-                    } elseif (isset($data[implode('.', $bits)])) {
-                        // last bit can contain domain names and such so try to join whatever is left if it exists
-                        $data = $data[implode('.', $bits)];
-                        break;
-                    } else {
-                        throw new \RuntimeException($settingKey.' is not defined');
+                    $key = isset($key) ? $key.'.'.$bit : $bit;
+                    $match = false;
+                    if (isset($data[$key])) {
+                        $match = true;
+                        $data = $data[$key];
+                        unset($key);
                     }
-                    array_shift($bits);
+                }
+
+                if (!$match) {
+                    throw new \RuntimeException($settingKey.' is not defined.');
                 }
 
                 $value = $data;
@@ -278,7 +280,7 @@ EOT
             'use-include-path' => array($booleanValidator, $booleanNormalizer),
             'preferred-install' => array(
                 function ($val) { return in_array($val, array('auto', 'source', 'dist'), true); },
-                function ($val) { return $val; }
+                function ($val) { return $val; },
             ),
             'store-auths' => array(
                 function ($val) { return in_array($val, array('true', 'false', 'prompt'), true); },
@@ -288,7 +290,7 @@ EOT
                     }
 
                     return $val !== 'false' && (bool) $val;
-                }
+                },
             ),
             'notify-on-install' => array($booleanValidator, $booleanNormalizer),
             'vendor-dir' => array('is_string', function ($val) { return $val; }),
@@ -301,7 +303,7 @@ EOT
             'cache-files-ttl' => array('is_numeric', 'intval'),
             'cache-files-maxsize' => array(
                 function ($val) { return preg_match('/^\s*([0-9.]+)\s*(?:([kmg])(?:i?b)?)?\s*$/i', $val) > 0; },
-                function ($val) { return $val; }
+                function ($val) { return $val; },
             ),
             'discard-changes' => array(
                 function ($val) { return in_array($val, array('stash', 'true', 'false', '1', '0'), true); },
@@ -311,7 +313,7 @@ EOT
                     }
 
                     return $val !== 'false' && (bool) $val;
-                }
+                },
             ),
             'autoloader-suffix' => array('is_string', function ($val) { return $val === 'null' ? null : $val; }),
             'optimize-autoloader' => array($booleanValidator, $booleanNormalizer),
@@ -336,7 +338,7 @@ EOT
                 },
                 function ($vals) {
                     return $vals;
-                }
+                },
             ),
             'github-domains' => array(
                 function ($vals) {
@@ -348,7 +350,7 @@ EOT
                 },
                 function ($vals) {
                     return $vals;
-                }
+                },
             ),
         );
 
@@ -475,13 +477,7 @@ EOT
             if (is_array($value) && (!is_numeric(key($value)) || ($key === 'repositories' && null === $k))) {
                 $k .= preg_replace('{^config\.}', '', $key . '.');
                 $this->listConfiguration($value, $rawVal, $output, $k);
-
-                if (substr_count($k, '.') > 1) {
-                    $k = str_split($k, strrpos($k, '.', -2));
-                    $k = $k[0] . '.';
-                } else {
-                    $k = $origK;
-                }
+                $k = $origK;
 
                 continue;
             }

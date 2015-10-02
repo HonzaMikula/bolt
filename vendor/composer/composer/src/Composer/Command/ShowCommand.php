@@ -16,7 +16,7 @@ use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\Factory;
 use Composer\Package\CompletePackageInterface;
-use Composer\Package\Version\VersionParser;
+use Composer\Semver\VersionParser;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Symfony\Component\Console\Input\InputInterface;
@@ -245,8 +245,8 @@ EOT
      * @param  RepositoryInterface       $repos
      * @param  string                    $name
      * @param  string                    $version
-     * @return array                     array(CompletePackageInterface, array of versions)
      * @throws \InvalidArgumentException
+     * @return array                     array(CompletePackageInterface, array of versions)
      */
     protected function getPackage(RepositoryInterface $installedRepo, RepositoryInterface $repos, $name, $version = null)
     {

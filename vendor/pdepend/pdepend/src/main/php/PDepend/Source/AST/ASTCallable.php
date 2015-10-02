@@ -4,7 +4,7 @@
  *
  * PHP Version 5
  *
- * Copyright (c) 2008-2013, Manuel Pichler <mapi@pdepend.org>.
+ * Copyright (c) 2008-2015, Manuel Pichler <mapi@pdepend.org>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,46 +36,22 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- * @copyright 2008-2013 Manuel Pichler. All rights reserved.
- * @license   http://www.opensource.org/licenses/bsd-license.php BSD License
- * @since     0.9.6
+ * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  */
 
 namespace PDepend\Source\AST;
 
 /**
- * This class represents primitive types like integer, float, boolean, string
- * etc.
+ * Base interface for all callables.
  *
- * @copyright 2008-2013 Manuel Pichler. All rights reserved.
- * @license   http://www.opensource.org/licenses/bsd-license.php BSD License
- * @since     0.9.6
+ * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  */
-class ASTPrimitiveType extends ASTType
+interface ASTCallable
 {
     /**
-     * This method will return <b>true</b> when this type is a php primitive.
-     * For this concrete implementation the return value will be always true.
-     *
-     * @return boolean
+     * @return \PDepend\Source\AST\ASTType
      */
-    public function isPrimitive()
-    {
-        return true;
-    }
-
-    /**
-     * Accept method of the visitor design pattern. This method will be called
-     * by a visitor during tree traversal.
-     *
-     * @param \PDepend\Source\ASTVisitor\ASTVisitor $visitor The calling visitor instance.
-     * @param mixed                                 $data
-     *
-     * @return mixed
-     * @since  0.9.12
-     */
-    public function accept(\PDepend\Source\ASTVisitor\ASTVisitor $visitor, $data = null)
-    {
-        return $visitor->visitPrimitiveType($this, $data);
-    }
+    public function getReturnType();
 }

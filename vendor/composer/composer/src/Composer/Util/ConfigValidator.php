@@ -38,8 +38,8 @@ class ConfigValidator
     /**
      * Validates the config, and returns the result.
      *
-     * @param string  $file                       The path to the file
-     * @param integer $arrayLoaderValidationFlags Flags for ArrayLoader validation
+     * @param string $file                       The path to the file
+     * @param int    $arrayLoaderValidationFlags Flags for ArrayLoader validation
      *
      * @return array a triple containing the errors, publishable errors, and warnings
      */
@@ -122,6 +122,14 @@ class ConfigValidator
                 $plural = (count($requireOverrides) > 1) ? 'are' : 'is';
                 $warnings[] = implode(', ', array_keys($requireOverrides)). " {$plural} required both in require and require-dev, this can lead to unexpected behavior";
             }
+        }
+
+        // check for empty psr-0/psr-4 namespace prefixes
+        if (isset($manifest['autoload']['psr-0'][''])) {
+            $warnings[] = "Defining autoload.psr-0 with an empty namespace prefix is a bad idea for performance";
+        }
+        if (isset($manifest['autoload']['psr-4'][''])) {
+            $warnings[] = "Defining autoload.psr-4 with an empty namespace prefix is a bad idea for performance";
         }
 
         try {
