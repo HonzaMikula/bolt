@@ -32,7 +32,7 @@ class Application extends Silex\Application
      */
     public function __construct(array $values = array())
     {
-        $values['bolt_version'] = '2.2.11';
+        $values['bolt_version'] = '2.2.13';
         $values['bolt_name'] = '';
         $values['bolt_released'] = true; // `true` for stable releases, `false` for alpha, beta and RC.
 
@@ -551,6 +551,13 @@ class Application extends Silex\Application
             $response->headers->set('Frame-Options', 'SAMEORIGIN');
         }
 
+        // Exit now if it's an AJAX call
+        if ($request->isXmlHttpRequest()) {
+            $this['stopwatch']->stop('bolt.app.after');
+
+            return;
+        }
+
         // true if we need to consider adding html snippets
         if (isset($this['htmlsnippets']) && ($this['htmlsnippets'] === true)) {
             // only add when content-type is text/html
@@ -629,13 +636,17 @@ class Application extends Silex\Application
 
         $end = $this['config']->getWhichEnd();
         if (($exception instanceof HttpException) && ($end == 'frontend')) {
-            $content = $this['storage']->getContent($this['config']->get('general/notfound'), array('returnsingle' => true));
+            if (substr($this['config']->get('general/notfound'), -5) === '.twig') {
+                return $this['render']->render($this['config']->get('general/notfound'));
+            } else {
+                $content = $this['storage']->getContent($this['config']->get('general/notfound'), array('returnsingle' => true));
 
-            // Then, select which template to use, based on our 'cascading templates rules'
-            if ($content instanceof Content && !empty($content->id)) {
-                $template = $this['templatechooser']->record($content);
+                // Then, select which template to use, based on our 'cascading templates rules'
+                if ($content instanceof Content && !empty($content->id)) {
+                    $template = $this['templatechooser']->record($content);
 
-                return $this['render']->render($template, $content->getTemplateContext());
+                    return $this['render']->render($template, $content->getTemplateContext());
+                }
             }
 
             $message = "The page could not be found, and there is no 'notfound' set in 'config.yml'. Sorry about that.";
