@@ -295,6 +295,8 @@ EOT
             'notify-on-install' => array($booleanValidator, $booleanNormalizer),
             'vendor-dir' => array('is_string', function ($val) { return $val; }),
             'bin-dir' => array('is_string', function ($val) { return $val; }),
+            'archive-dir' => array('is_string', function ($val) { return $val; }),
+            'archive-format' => array('is_string', function ($val) { return $val; }),
             'cache-dir' => array('is_string', function ($val) { return $val; }),
             'cache-files-dir' => array('is_string', function ($val) { return $val; }),
             'cache-repo-dir' => array('is_string', function ($val) { return $val; }),
@@ -304,6 +306,10 @@ EOT
             'cache-files-maxsize' => array(
                 function ($val) { return preg_match('/^\s*([0-9.]+)\s*(?:([kmg])(?:i?b)?)?\s*$/i', $val) > 0; },
                 function ($val) { return $val; },
+            ),
+            'bin-compat' => array(
+                function ($val) { return in_array($val, array('auto', 'full')); },
+                function ($val) { return $val; }
             ),
             'discard-changes' => array(
                 function ($val) { return in_array($val, array('stash', 'true', 'false', '1', '0'), true); },
@@ -320,6 +326,11 @@ EOT
             'classmap-authoritative' => array($booleanValidator, $booleanNormalizer),
             'prepend-autoloader' => array($booleanValidator, $booleanNormalizer),
             'github-expose-hostname' => array($booleanValidator, $booleanNormalizer),
+            'prefer-stable' =>  array($booleanValidator, $booleanNormalizer),
+            'minimum-stability' => array(
+                function ($val) { return in_array($val, array('dev', 'alpha', 'beta', 'RC', 'stable'), true); },
+                function ($val) { return $val; },
+            ),
         );
         $multiConfigValues = array(
             'github-protocols' => array(

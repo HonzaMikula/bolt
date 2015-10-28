@@ -43,7 +43,6 @@
 
 namespace PDepend\Source\Language\PHP;
 
-use PDepend\Source\AST\AbstractASTCallable;
 use PDepend\Source\AST\ASTValue;
 use PDepend\Source\Parser\TokenStreamEndException;
 use PDepend\Source\Parser\UnexpectedTokenException;
@@ -59,7 +58,7 @@ use PDepend\Source\Tokenizer\Tokens;
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  * @since 0.9.20
  */
-class PHPParserGeneric extends AbstractPHPParser
+class PHPParserGeneric extends PHPParserVersion70
 {
     /**
      * Tests if the given token type is a reserved keyword in the supported PHP
@@ -102,6 +101,7 @@ class PHPParserGeneric extends AbstractPHPParser
             case Tokens::T_TRAIT:
             case Tokens::T_STRING:
             case Tokens::T_TRAIT_C:
+            case Tokens::T_CALLABLE:
             case Tokens::T_INSTEADOF:
             case Tokens::T_NAMESPACE:
                 return true;
@@ -110,42 +110,16 @@ class PHPParserGeneric extends AbstractPHPParser
     }
 
     /**
-     * Parses a valid class or interface name and returns the image of the parsed
-     * token.
+     * Tests if the give token is a valid function name in the supported PHP
+     * version.
      *
-     * @return string
-     * @throws \PDepend\Source\Parser\TokenStreamEndException
-     * @throws \PDepend\Source\Parser\UnexpectedTokenException
+     * @param integer $tokenType
+     * @return boolean
+     * @since 2.3
      */
-    protected function parseClassName()
+    protected function isFunctionName($tokenType)
     {
-        $type = $this->tokenizer->peek();
-        
-        if ($this->isClassName($type)) {
-            return $this->consumeToken($type)->image;
-        } elseif ($type === Tokenizer::T_EOF) {
-            throw new TokenStreamEndException($this->tokenizer);
-        }
-        
-        throw new UnexpectedTokenException(
-            $this->tokenizer->next(),
-            $this->tokenizer->getSourceFile()
-        );
-    }
-
-    /**
-     * Parses a function name from the given tokenizer and returns the string
-     * literal representing the function name. If no valid token exists in the
-     * token stream, this method will throw an exception.
-     *
-     * @return string
-     * @throws \PDepend\Source\Parser\UnexpectedTokenException
-     * @throws \PDepend\Source\Parser\TokenStreamEndException
-     */
-    public function parseFunctionName()
-    {
-        $type = $this->tokenizer->peek();
-        switch ($type) {
+        switch ($tokenType) {
             case Tokens::T_CLONE:
             case Tokens::T_STRING:
             case Tokens::T_USE:
@@ -159,210 +133,12 @@ class PHPParserGeneric extends AbstractPHPParser
             case Tokens::T_NAMESPACE:
             case Tokens::T_DIR:
             case Tokens::T_NS_C:
+            case Tokens::T_YIELD:
             case Tokens::T_PARENT:
             case Tokens::T_TRAIT_C:
-                return $this->consumeToken($type)->image;
-            case Tokenizer::T_EOF:
-                throw new TokenStreamEndException($this->tokenizer);
-        }
-        throw new UnexpectedTokenException(
-            $this->tokenizer->next(),
-            $this->tokenizer->getSourceFile()
-        );
-    }
-
-    /**
-     * @param \PDepend\Source\AST\AbstractASTCallable $callable
-     * @return \PDepend\Source\AST\AbstractASTCallable
-     */
-    protected function parseCallableDeclarationAddition($callable)
-    {
-        $this->consumeComments();
-        if (Tokens::T_COLON != $this->tokenizer->peek()) {
-            return $callable;
-        }
-
-        $this->consumeToken(Tokens::T_COLON);
-
-        $type = $this->parseReturnTypeHint();
-        $callable->addChild($type);
-
-        return $callable;
-    }
-
-    /**
-     * @return \PDepend\Source\AST\ASTType
-     */
-    protected function parseReturnTypeHint()
-    {
-        $this->consumeComments();
-
-        switch ($tokenType = $this->tokenizer->peek()) {
-            case Tokens::T_ARRAY:
-                $type = $this->parseArrayType();
-                break;
-            case Tokens::T_SELF:
-                $type = $this->parseSelfType();
-                break;
-            case Tokens::T_PARENT:
-                $type = $this->parseParentType();
-                break;
-            default:
-                $type = $this->parseTypeHint();
-                break;
-        }
-        return $type;
-    }
-
-    /**
-     * Tests if the given token type is a valid type hint in the supported
-     * PHP version.
-     *
-     * @param integer $tokenType Numerical token identifier.
-     *
-     * @return boolean
-     * @since  1.0.0
-     */
-    protected function isTypeHint($tokenType)
-    {
-        switch ($tokenType) {
-            case Tokens::T_STRING:
-            case Tokens::T_CALLABLE:
-            case Tokens::T_BACKSLASH:
-            case Tokens::T_NAMESPACE:
                 return true;
         }
         return false;
-    }
-
-    /**
-     * Parses a type hint that is valid in the supported PHP version.
-     *
-     * @return \PDepend\Source\AST\ASTNode
-     * @since  1.0.0
-     */
-    protected function parseTypeHint()
-    {
-        switch ($this->tokenizer->peek()) {
-            case Tokens::T_CALLABLE:
-                $this->consumeToken(Tokens::T_CALLABLE);
-                $type = $this->builder->buildAstTypeCallable();
-                break;
-            case Tokens::T_STRING:
-            case Tokens::T_BACKSLASH:
-            case Tokens::T_NAMESPACE:
-                $name = $this->parseQualifiedName();
-
-                if ($this->isScalarOrCallableTypeHint($name)) {
-                    $type = $this->parseScalarOrCallableTypeHint($name);
-                } else {
-                    $type = $this->builder->buildAstClassOrInterfaceReference($name);
-                }
-                break;
-        }
-        return $type;
-    }
-
-    /**
-     * Tests if the given image is a PHP 7 type hint.
-     *
-     * @param string $image
-     * @return boolean
-     */
-    private function isScalarOrCallableTypeHint($image)
-    {
-        switch (strtolower($image)) {
-            case 'int':
-            case 'bool':
-            case 'float':
-            case 'string':
-            case 'callable':
-                return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Parses a scalar type hint or a callable type hint.
-     *
-     * @param string $image
-     * @return \PDepend\Source\AST\ASTType
-     */
-    private function parseScalarOrCallableTypeHint($image)
-    {
-        switch (strtolower($image)) {
-            case 'int':
-            case 'bool':
-            case 'float':
-            case 'string':
-                return $this->builder->buildAstScalarType($image);
-            case 'callable':
-                return $this->builder->buildAstTypeCallable();
-        }
-
-        return false;
-    }
-
-    /**
-     * Parses an integer value.
-     *
-     * @return \PDepend\Source\AST\ASTLiteral
-     * @throws \PDepend\Source\Parser\UnexpectedTokenException
-     * @since  1.0.0
-     */
-    protected function parseIntegerNumber()
-    {
-        $token = $this->consumeToken(Tokens::T_LNUMBER);
-
-        if ('0' === $token->image) {
-            if (Tokens::T_STRING === $this->tokenizer->peek()) {
-                $token1 = $this->consumeToken(Tokens::T_STRING);
-                if (preg_match('(^b[01]+$)', $token1->image)) {
-                    $token->image     = $token->image . $token1->image;
-                    $token->endLine   = $token1->endLine;
-                    $token->endColumn = $token1->endColumn;
-                } else {
-                    throw new UnexpectedTokenException(
-                        $token1,
-                        $this->tokenizer->getSourceFile()
-                    );
-                }
-            }
-        }
-
-        $literal = $this->builder->buildAstLiteral($token->image);
-        $literal->configureLinesAndColumns(
-            $token->startLine,
-            $token->endLine,
-            $token->startColumn,
-            $token->endColumn
-        );
-
-        return $literal;
-    }
-
-    /**
-     * This method parses a PHP version specific identifier for method and
-     * property postfix expressions.
-     *
-     * @return \PDepend\Source\AST\ASTNode
-     * @since  1.0.0
-     */
-    protected function parsePostfixIdentifier()
-    {
-        switch ($this->tokenizer->peek()) {
-            case Tokens::T_STRING:
-                $node = $this->parseLiteral();
-                break;
-            case Tokens::T_CURLY_BRACE_OPEN:
-                $node = $this->parseCompoundExpression();
-                break;
-            default:
-                $node = $this->parseCompoundVariableOrVariableVariableOrVariable();
-                break;
-        }
-        return $this->parseOptionalIndexExpression($node);
     }
 
     /**
@@ -370,7 +146,7 @@ class PHPParserGeneric extends AbstractPHPParser
      * PHP 5.2.x versions :/
      *
      * @return \PDepend\Source\AST\ASTHeredoc
-     * @since  1.0.0
+     * @since 1.0.0
      */
     protected function parseHeredoc()
     {
@@ -389,56 +165,12 @@ class PHPParserGeneric extends AbstractPHPParser
     }
 
     /**
-     * Tests if the next token is a valid array start delimiter in the supported
-     * PHP version.
-     *
-     * @return boolean
-     * @since  1.0.0
-     */
-    protected function isArrayStartDelimiter()
-    {
-        switch ($this->tokenizer->peek()) {
-            case Tokens::T_ARRAY:
-            case Tokens::T_SQUARED_BRACKET_OPEN:
-                return true;
-        }
-        return false;
-    }
-
-    /**
-     * Parses a php array declaration.
-     *
-     * @param  \PDepend\Source\AST\ASTArray $array
-     * @param  boolean                      $static
-     * @return \PDepend\Source\AST\ASTArray
-     * @since  1.0.0
-     */
-    protected function parseArray(\PDepend\Source\AST\ASTArray $array, $static = false)
-    {
-        switch ($this->tokenizer->peek()) {
-            case Tokens::T_ARRAY:
-                $this->consumeToken(Tokens::T_ARRAY);
-                $this->consumeComments();
-                $this->consumeToken(Tokens::T_PARENTHESIS_OPEN);
-                $this->parseArrayElements($array, Tokens::T_PARENTHESIS_CLOSE, $static);
-                $this->consumeToken(Tokens::T_PARENTHESIS_CLOSE);
-                break;
-            default:
-                $this->consumeToken(Tokens::T_SQUARED_BRACKET_OPEN);
-                $this->parseArrayElements($array, Tokens::T_SQUARED_BRACKET_CLOSE, $static);
-                $this->consumeToken(Tokens::T_SQUARED_BRACKET_CLOSE);
-                break;
-        }
-        return $array;
-    }
-
-    /**
      * Parses additional static values that are valid in the supported php version.
      *
-     * @param  \PDepend\Source\AST\ASTValue $value
+     * @param \PDepend\Source\AST\ASTValue $value
      * @return \PDepend\Source\AST\ASTValue
      * @throws \PDepend\Source\Parser\UnexpectedTokenException
-     * @todo   Handle shift left/right expressions in ASTValue
+     * @todo Handle shift left/right expressions in ASTValue
      */
     protected function parseStaticValueVersionSpecific(ASTValue $value)
     {

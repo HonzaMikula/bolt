@@ -42,25 +42,11 @@ class Sqlite extends Db
     /**
      * @param string $tableName
      *
-     * @return array[string]
+     * @return string
      */
-    public function getPrimaryKey($tableName)
+    public function getPrimaryColumn($tableName)
     {
-        if (!isset($this->primaryKeys[$tableName])) {
-            $primaryKey = [];
-            $query = 'PRAGMA table_info(' . $this->getQuotedName($tableName) . ')';
-            $stmt = $this->executeQuery($query, []);
-            $columns = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-
-            foreach ($columns as $column) {
-                if ($column['pk'] !== '0') {
-                    $primaryKey []= $column['name'];
-                }
-            }
-
-            $this->primaryKeys[$tableName] = $primaryKey;
-        }
-
-        return $this->primaryKeys[$tableName];
+        // @TODO: Implement this for SQLite later
+        return 'id';
     }
 }

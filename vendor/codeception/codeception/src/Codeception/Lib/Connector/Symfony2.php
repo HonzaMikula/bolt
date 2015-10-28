@@ -3,20 +3,10 @@ namespace Codeception\Lib\Connector;
 
 class Symfony2 extends \Symfony\Component\HttpKernel\Client
 {
-    
-    /**
-     * @var boolean
-     */
     private static $hasPerformedRequest;
 
-    /**
-     * @var array
-     */
     public $persistentServices = [];
 
-    /**
-     * @param Request $request
-     */
     protected function doRequest($request)
     {
         $services = [];
@@ -39,6 +29,7 @@ class Symfony2 extends \Symfony\Component\HttpKernel\Client
     }
 
     /**
+     * @param $services
      * @return array
      */
     protected function persistServices()
@@ -54,7 +45,8 @@ class Symfony2 extends \Symfony\Component\HttpKernel\Client
     }
 
     /**
-     * @param array $services
+     * @param $services
+     * @param $container
      */
     protected function injectPersistedServices($services)
     {

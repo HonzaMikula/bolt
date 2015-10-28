@@ -1,6 +1,6 @@
 # Config
 
-This chapter will describe the `config` section of the `composer.json` 
+This chapter will describe the `config` section of the `composer.json`
 [schema](04-schema.md).
 
 ## process-timeout
@@ -102,6 +102,15 @@ downloads. When the garbage collection is periodically ran, this is the maximum
 size the cache will be able to use. Older (less used) files will be removed
 first until the cache fits.
 
+## bin-compat
+
+Defaults to `auto`. Determines the compatibility of the binaries to be installed.
+If it is `auto` then Composer only installs .bat proxy files when on Windows. If
+set to `full` then both .bat files for Windows and scripts for Unix-based
+operating systems will be installed for each binary. This is mainly useful if you
+run Composer inside a linux VM but still want the .bat proxies available for use
+in the Windows host OS.
+
 ## prepend-autoloader
 
 Defaults to `true`. If `false`, the Composer autoloader will not be prepended to
@@ -162,7 +171,7 @@ Example:
 ```json
 {
     "config": {
-        "bin-dir": "bin"
+        "archive-dir": "/home/user/.composer/repo"
     }
 }
 ```

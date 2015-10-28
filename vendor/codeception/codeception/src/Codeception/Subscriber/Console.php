@@ -8,7 +8,7 @@ use Codeception\Event\TestEvent;
 use Codeception\Events;
 use Codeception\Lib\Console\Message;
 use Codeception\Lib\Console\Output;
-use Codeception\Lib\Notification;
+use Codeception\Lib\Deprecation;
 use Codeception\Lib\Suite;
 use Codeception\Step;
 use Codeception\Step\Comment;
@@ -248,9 +248,9 @@ class Console implements EventSubscriberInterface
     public function afterSuite(SuiteEvent $e)
     {
         $this->message()->width(array_sum($this->columns), '-')->writeln();
-        $deprecationMessages = Notification::all();
+        $deprecationMessages = Deprecation::all();
         foreach ($deprecationMessages as $message) {
-            $this->output->notification($message);
+            $this->output->deprecate($message);
         }
     }
 

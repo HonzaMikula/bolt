@@ -293,19 +293,20 @@ class Configuration
             ->files()
             ->name('*.yml')
             ->in($path)
-            ->depth('< 2');
+            ->depth('< 1');
 
-        $envConfig = [];
+        $envs = [];
         /** @var SplFileInfo $envFile */
         foreach ($envFiles as $envFile) {
-            $env = str_replace(['.dist.yml', '.yml'], '', $envFile->getFilename());
+            preg_match('~^(.*?)(\.dist)?\.yml$~', $envFile->getFilename(), $matches);
+            $envs[] = $matches[1];
+        }
+
+        $envConfig = [];
+        foreach ($envs as $env) {
             $envConfig[$env] = [];
-            $envPath = $path;
-            if ($envFile->getRelativePath()) {
-                $envPath .= DIRECTORY_SEPARATOR . $envFile->getRelativePath();
-            }
             foreach (['.dist.yml', '.yml'] as $suffix) {
-                $envConf = self::getConfFromFile($envPath . DIRECTORY_SEPARATOR . $env . $suffix, null);
+                $envConf = self::getConfFromFile($path . DIRECTORY_SEPARATOR . $env . $suffix, null);
                 if ($envConf === null) {
                     continue;
                 }

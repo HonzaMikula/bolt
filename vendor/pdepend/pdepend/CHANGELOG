@@ -1,3 +1,23 @@
+pdepend-2.2.2 (2015/10/16)
+==========================
+
+This release adds a new analyzer that can be used to visualize 
+namespace dependencies.
+
+- Implemented #221: Added line numbers to summary log. Implemented in 
+  commit #a975553.
+- Implemented #222: Calculate type dependencies. Implemented in commit 
+  #8a924f6.
+
+pdepend-2.2.1 (2015/09/24)
+==========================
+
+With this release we made a dependency downgrade, so that we can 
+support more environments.
+
+- Implemented #223: Minimum Symfony version downgraded to 2.3. 
+  Implemented in commit #8601cc3.
+
 pdepend-2.2.0 (2015/09/19)
 ==========================
 

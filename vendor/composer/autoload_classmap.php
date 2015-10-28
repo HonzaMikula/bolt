@@ -675,6 +675,7 @@ return array(
     'SebastianBergmann\\FinderFacade\\Configuration' => $vendorDir . '/sebastian/finder-facade/src/Configuration.php',
     'SebastianBergmann\\FinderFacade\\FinderFacade' => $vendorDir . '/sebastian/finder-facade/src/FinderFacade.php',
     'SebastianBergmann\\GlobalState\\Blacklist' => $vendorDir . '/sebastian/global-state/src/Blacklist.php',
+    'SebastianBergmann\\GlobalState\\CodeExporter' => $vendorDir . '/sebastian/global-state/src/CodeExporter.php',
     'SebastianBergmann\\GlobalState\\Exception' => $vendorDir . '/sebastian/global-state/src/Exception.php',
     'SebastianBergmann\\GlobalState\\Restorer' => $vendorDir . '/sebastian/global-state/src/Restorer.php',
     'SebastianBergmann\\GlobalState\\RuntimeException' => $vendorDir . '/sebastian/global-state/src/RuntimeException.php',

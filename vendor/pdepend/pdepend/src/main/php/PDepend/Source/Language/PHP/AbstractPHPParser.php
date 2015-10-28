@@ -449,32 +449,106 @@ abstract class AbstractPHPParser
     abstract protected function isKeyword($tokenType);
 
     /**
+     * Parses a valid class or interface name and returns the image of the parsed
+     * token.
+     *
+     * @return string
+     * @throws \PDepend\Source\Parser\TokenStreamEndException
+     * @throws \PDepend\Source\Parser\UnexpectedTokenException
+     */
+    protected function parseClassName()
+    {
+        $type = $this->tokenizer->peek();
+
+        if ($this->isClassName($type)) {
+            return $this->consumeToken($type)->image;
+        } elseif ($type === Tokenizer::T_EOF) {
+            throw new TokenStreamEndException($this->tokenizer);
+        }
+
+        throw new UnexpectedTokenException(
+            $this->tokenizer->next(),
+            $this->tokenizer->getSourceFile()
+        );
+    }
+
+    /**
      * Will return <b>true</b> if the given <b>$tokenType</b> is a valid class
      * name part.
      *
-     * @param  integer $tokenType The type of a parsed token.
+     * @param integer $tokenType
      * @return boolean
-     * @since  0.10.6
+     * @since 0.10.6
      */
-    abstract protected function isClassName($tokenType);
+    protected function isClassName($tokenType)
+    {
+        switch ($tokenType) {
+            case Tokens::T_NULL:
+            case Tokens::T_TRUE:
+            case Tokens::T_FALSE:
+            case Tokens::T_TRAIT:
+            case Tokens::T_YIELD:
+            case Tokens::T_STRING:
+            case Tokens::T_TRAIT_C:
+            case Tokens::T_CALLABLE:
+            case Tokens::T_INSTEADOF:
+                return true;
+        }
+        return false;
+    }
 
     /**
-     * Parses a valid class or interface name for the currently configured php
-     * version.
+     * Parses a function name from the given tokenizer and returns the string
+     * literal representing the function name. If no valid token exists in the
+     * token stream, this method will throw an exception.
      *
      * @return string
-     * @since  0.9.20
+     * @throws \PDepend\Source\Parser\UnexpectedTokenException
+     * @throws \PDepend\Source\Parser\TokenStreamEndException
+     * @since 0.10.0
      */
-    abstract protected function parseClassName();
+    protected function parseFunctionName()
+    {
+        $tokenType = $this->tokenizer->peek();
+
+        if ($this->isFunctionName($tokenType)) {
+            return $this->consumeToken($tokenType)->image;
+        } elseif ($tokenType === Tokenizer::T_EOF) {
+            throw new TokenStreamEndException($this->tokenizer);
+        }
+
+        throw new UnexpectedTokenException(
+            $this->tokenizer->next(),
+            $this->tokenizer->getSourceFile()
+        );
+    }
 
     /**
-     * Parses a valid method or function name for the currently configured php
+     * Tests if the give token is a valid function name in the supported PHP
      * version.
      *
-     * @return string
-     * @since  0.10.0
+     * @param integer $tokenType
+     * @return boolean
+     * @since 2.3
      */
-    abstract protected function parseFunctionName();
+    protected function isFunctionName($tokenType)
+    {
+        switch ($tokenType) {
+            case Tokens::T_NULL:
+            case Tokens::T_SELF:
+            case Tokens::T_TRUE:
+            case Tokens::T_FALSE:
+            case Tokens::T_TRAIT:
+            case Tokens::T_YIELD:
+            case Tokens::T_PARENT:
+            case Tokens::T_STRING:
+            case Tokens::T_TRAIT_C:
+            case Tokens::T_CALLABLE:
+            case Tokens::T_INSTEADOF:
+                return true;
+        }
+        return false;
+    }
 
     /**
      * Parses a trait declaration.
@@ -2475,7 +2549,7 @@ abstract class AbstractPHPParser
      * @throws \PDepend\Source\Parser\ParserException
      * @since  0.9.6
      */
-    private function parseOptionalExpression()
+    protected function parseOptionalExpression()
     {
         $expressions = array();
 
@@ -2700,10 +2774,8 @@ abstract class AbstractPHPParser
                     $expressions[] = $this->parseYield();
                     break;
                 default:
-                    throw new UnexpectedTokenException(
-                        $this->consumeToken($tokenType),
-                        $this->compilationUnit->getFileName()
-                    );
+                    $expressions[] = $this->parseOptionalExpressionForVersion();
+                    break;
             }
         }
 
@@ -2731,6 +2803,23 @@ abstract class AbstractPHPParser
     }
 
     /**
+     * This method will be called when the base parser cannot handle an expression
+     * in the base version. In this method you can implement version specific
+     * expressions.
+     *
+     * @return \PDepend\Source\AST\ASTNode
+     * @throws \PDepend\Source\Parser\UnexpectedTokenException
+     * @since 2.2
+     */
+    protected function parseOptionalExpressionForVersion()
+    {
+        throw new UnexpectedTokenException(
+            $this->tokenizer->next(),
+            $this->compilationUnit->getFileName()
+        );
+    }
+
+    /**
      * Applies all reduce rules against the given expression list.
      *
      * @param \PDepend\Source\AST\ASTExpression[] $expressions Unprepared input
@@ -2739,7 +2828,7 @@ abstract class AbstractPHPParser
      * @return \PDepend\Source\AST\ASTExpression[]
      * @since  0.10.0
      */
-    private function reduce(array $expressions)
+    protected function reduce(array $expressions)
     {
         return $this->reduceUnaryExpression($expressions);
     }
@@ -3731,9 +3820,20 @@ abstract class AbstractPHPParser
      * property postfix expressions.
      *
      * @return \PDepend\Source\AST\ASTNode
-     * @since  1.0.0
+     * @since 1.0.0
      */
-    abstract protected function parsePostfixIdentifier();
+    protected function parsePostfixIdentifier()
+    {
+        switch ($this->tokenizer->peek()) {
+            case Tokens::T_STRING:
+                $node = $this->parseLiteral();
+                break;
+            default:
+                $node = $this->parseCompoundVariableOrVariableVariableOrVariable();
+                break;
+        }
+        return $this->parseOptionalIndexExpression($node);
+    }
 
     /**
      * This method parses an optional member primary expression. It will parse
@@ -4734,15 +4834,28 @@ abstract class AbstractPHPParser
      * Parses an integer value.
      *
      * @return \PDepend\Source\AST\ASTLiteral
-     * @since  1.0.0
+     * @since 1.0.0
      */
-    abstract protected function parseIntegerNumber();
+    protected function parseIntegerNumber()
+    {
+        $token = $this->consumeToken(Tokens::T_LNUMBER);
+
+        $literal = $this->builder->buildAstLiteral($token->image);
+        $literal->configureLinesAndColumns(
+            $token->startLine,
+            $token->endLine,
+            $token->startColumn,
+            $token->endColumn
+        );
+
+        return $literal;
+    }
 
     /**
      * Parses an array structure.
      *
      * @return \PDepend\Source\AST\ASTArray
-     * @since  1.0.0
+     * @since 1.0.0
      */
     private function doParseArray($static = false)
     {
@@ -5324,21 +5437,40 @@ abstract class AbstractPHPParser
      * Tests if the given token type is a valid formal parameter in the supported
      * PHP version.
      *
-     * @param integer $tokenType Numerical token identifier.
-     *
+     * @param integer $tokenType
      * @return boolean
-     * @since  1.0.0
+     * @since 1.0.0
      */
-    abstract protected function isTypeHint($tokenType);
+    protected function isTypeHint($tokenType)
+    {
+        switch ($tokenType) {
+            case Tokens::T_STRING:
+            case Tokens::T_BACKSLASH:
+            case Tokens::T_NAMESPACE:
+                return true;
+        }
+        return false;
+    }
 
     /**
-     * Parses a formal parameter type hint that is valid in the supported PHP
-     * version.
+     * Parses a type hint that is valid in the supported PHP version.
      *
      * @return \PDepend\Source\AST\ASTNode
-     * @since  1.0.0
+     * @since 1.0.0
      */
-    abstract protected function parseTypeHint();
+    protected function parseTypeHint()
+    {
+        switch ($this->tokenizer->peek()) {
+            case Tokens::T_STRING:
+            case Tokens::T_BACKSLASH:
+            case Tokens::T_NAMESPACE:
+                $type = $this->builder->buildAstClassOrInterfaceReference(
+                    $this->parseQualifiedName()
+                );
+                break;
+        }
+        return $type;
+    }
 
     /**
      * Extracts all dependencies from a callable body.
@@ -5727,7 +5859,7 @@ abstract class AbstractPHPParser
         $tokenType = $this->tokenizer->peek();
 
         // Search for a namespace identifier
-        if ($tokenType === Tokens::T_STRING) {
+        if ($this->isClassName($tokenType)) {
             // Reset namespace property
             $this->namespaceName = null;
 

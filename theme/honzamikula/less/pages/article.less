@@ -213,7 +213,7 @@
   }
 
   //- Latest Article
-  latest-article {
+  latest-articles {
     display: block;
     padding: @baseline 0 0 0;
 
@@ -254,6 +254,34 @@
       font-family: @fontSans;
     }
 
+
+    latest-articles--more {
+      display: block;
+      padding-bottom: @baseline;
+
+      text-align: center;
+
+      a {
+        border-radius: @baseline / 2;
+        display: inline-block;
+        padding: 0 @baseline;
+
+        border: 1px solid #ddd;
+        color: #666;
+
+        font-family: @fontSans;
+        line-height: @baseline * 1.5;
+        text-decoration: none;
+
+        transition: 0.15s all;
+
+        &:focus,
+        &:hover {
+          border: 1px solid #999;
+          color: #555;
+        }
+      }
+    }
   }
 
 

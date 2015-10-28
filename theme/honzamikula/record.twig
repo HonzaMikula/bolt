@@ -109,7 +109,7 @@
       </div>
     </aside>
 
-    <latest-article role="complementary">
+    <latest-articles role="complementary">
       {% setcontent latest_articles = "articles/latest/3" where { id: "!"~record.id } %}
       {% for article in latest_articles %}
         <article {% if article.image=="" %}class="no-image"{% endif %}>
@@ -132,7 +132,10 @@
           </p>
         </article>
       {% endfor %}
-    </latest-article>
+      <latest-articles--more>
+        <a href="/">Více článků</a>
+      </latest-articles--more>
+    </latest-articles>
 
     <footer aria-label="Informace o webu" style="background-image: url({{ thumbnail(mytheme.image_footer, 0, 850) }})">
       <div>

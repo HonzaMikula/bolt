@@ -7,7 +7,6 @@ use Codeception\Configuration;
 use Codeception\TestCase;
 use Codeception\Lib\Interfaces\ActiveRecord;
 use Codeception\Lib\Interfaces\PartedModule;
-use Codeception\Lib\Interfaces\SupportsDomainRouting;
 use Codeception\Lib\Connector\Yii2 as Yii2Connector;
 use yii\db\ActiveRecordInterface;
 use Yii;
@@ -42,7 +41,7 @@ use Yii;
  * Stability: **stable**
  *
  */
-class Yii2 extends Framework implements ActiveRecord, PartedModule, SupportsDomainRouting
+class Yii2 extends Framework implements ActiveRecord, PartedModule
 {
     /**
      * Application config file must be set.
@@ -68,12 +67,9 @@ class Yii2 extends Framework implements ActiveRecord, PartedModule, SupportsDoma
     {
         $this->client = new Yii2Connector();
         $this->client->configFile = Configuration::projectDir().$this->config['configFile'];
-        $mainConfig = Configuration::config();
-        if (isset($mainConfig['config']) && isset($mainConfig['config']['test_entry_url'])){
-            $this->client->setServerParameter(
-                'HTTPS',
-                parse_url($mainConfig['config']['test_entry_url'], PHP_URL_SCHEME) === 'https'
-            );
+        $mainConfig = Configuration::config()['config'];
+        if (isset($mainConfig['test_entry_url'])){
+            $this->client->setServerParameter('HTTPS', parse_url($mainConfig['test_entry_url'], PHP_URL_SCHEME)  === 'https');
         }
         $this->app = $this->client->startApp();
 

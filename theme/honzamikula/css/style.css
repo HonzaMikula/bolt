@@ -805,12 +805,12 @@ pagination .prev a:focus {
   float: left;
   margin: 0 13.5px 27px 0;
 }
-#article latest-article {
+#article latest-articles {
   display: block;
   padding: 27px 0 0 0;
   background: #fff;
 }
-#article latest-article article {
+#article latest-articles article {
   position: relative;
   box-sizing: border-box;
   display: table;
@@ -819,23 +819,45 @@ pagination .prev a:focus {
   padding: 0 0 0 108px;
   width: 540px;
 }
-#article latest-article article.no-image {
+#article latest-articles article.no-image {
   min-height: auto;
 }
-#article latest-article img {
+#article latest-articles img {
   position: absolute;
   left: 0;
   top: 0;
   border-radius: 100%;
 }
-#article latest-article h2,
-#article latest-article h2 a {
+#article latest-articles h2,
+#article latest-articles h2 a {
   color: #000;
 }
-#article latest-article p,
-#article latest-article p a {
+#article latest-articles p,
+#article latest-articles p a {
   color: #999;
   font-family: 'Open Sans', Calibri, Arial, sans-serif;
+}
+#article latest-articles latest-articles--more {
+  display: block;
+  padding-bottom: 27px;
+  text-align: center;
+}
+#article latest-articles latest-articles--more a {
+  border-radius: 13.5px;
+  display: inline-block;
+  padding: 0 27px;
+  border: 1px solid #ddd;
+  color: #666;
+  font-family: 'Open Sans', Calibri, Arial, sans-serif;
+  line-height: 40.5px;
+  text-decoration: none;
+  -webkit-transition: 0.15s all;
+          transition: 0.15s all;
+}
+#article latest-articles latest-articles--more a:focus,
+#article latest-articles latest-articles--more a:hover {
+  border: 1px solid #999;
+  color: #555;
 }
 @media (max-width: 1050px) {
   #article nav {

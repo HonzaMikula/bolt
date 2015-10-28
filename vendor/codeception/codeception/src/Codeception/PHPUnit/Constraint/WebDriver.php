@@ -3,7 +3,6 @@ namespace Codeception\PHPUnit\Constraint;
 
 use Codeception\Exception\ElementNotFound;
 use Codeception\Lib\Console\Message;
-use Codeception\Util\Locator;
 use SebastianBergmann\Comparator\ComparisonFailure;
 
 class WebDriver extends Page
@@ -36,7 +35,7 @@ class WebDriver extends Page
             throw new ElementNotFound($selector, 'Element located either by name, CSS or XPath');
         }
 
-        $output = "Failed asserting that any element by " . Locator::humanReadableString($selector);
+        $output = new Message("Failed asserting that any element by '$selector'");
         $output .= $this->uriMessage('on page');
 
         if (count($nodes) < 5) {

@@ -68,10 +68,8 @@ class ZF1 extends Client
         ob_start();
         try {
             $this->bootstrap->run();
-            $_GET = $_POST = [];
         } catch (\Exception $e) {
             ob_end_clean();
-            $_GET = $_POST = [];
             throw $e;
         }
         ob_end_clean();

@@ -1,7 +1,6 @@
 <?php
 namespace Codeception\Module;
 
-use Codeception\Lib\Interfaces\DependsOnModule;
 use Codeception\Module as CodeceptionModule;
 use Codeception\TestCase;
 use Codeception\Exception\ModuleException;
@@ -41,7 +40,7 @@ use Codeception\Util\XmlStructure;
  * * response - last soap response (DOMDocument)
  *
  */
-class SOAP extends CodeceptionModule implements DependsOnModule
+class SOAP extends CodeceptionModule
 {
     protected $config = [
         'schema' => "",
