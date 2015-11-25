@@ -215,7 +215,7 @@
   //- Latest Article
   latest-articles {
     display: block;
-    padding: @baseline 0 0 0;
+    padding: @baseline @baseline/2 0 @baseline/2;
 
     background: #fff;
 
@@ -227,7 +227,7 @@
       margin: 0 auto @baseline auto;
       min-height: @baseline * 3;
       padding: 0 0 0 @baseline*4;
-      width: 540px;
+      max-width: 540px;
 
       &.no-image {
         min-height: auto;

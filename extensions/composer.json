@@ -14,7 +14,7 @@
     "minimum-stability": "stable",
     "prefer-stable": true,
     "provide": {
-        "bolt/bolt": "2.2.0"
+        "bolt/bolt": "2.2.13"
     },
     "scripts": {
         "post-package-install": "Bolt\\Composer\\ExtensionInstaller::handle",

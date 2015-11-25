@@ -6,6 +6,10 @@ namespace Bolt\Extension\Bolt\Sitemap;
 use Symfony\Component\HttpFoundation\Response;
 use Bolt\Extensions\Snippets\Location as SnippetLocation;
 
+# If we have a boatload of content, we might need a bit more memory.
+set_time_limit(0);
+ini_set('memory_limit', '512M');
+
 class Extension extends \Bolt\BaseExtension
 {
     public function getName()
@@ -20,6 +24,14 @@ class Extension extends \Bolt\BaseExtension
     {
         if (empty($this->config['ignore_contenttype'])) {
             $this->config['ignore_contenttype'] = array();
+        }
+
+        if (empty($this->config['ignore'])) {
+            $this->config['ignore'] = array();
+        }
+
+        if (empty($this->config['ignore_listing'])) {
+            $this->config['ignore_listing'] = false;
         }
 
         // Set up the routes for the sitemap..
@@ -40,23 +52,25 @@ class Extension extends \Bolt\BaseExtension
 
         $links = array(array('link' => $this->app['paths']['root'], 'title' => $this->app['config']->get('general/sitename')));
         foreach ( $this->app['config']->get('contenttypes') as $contenttype ) {
-            if (!in_array($contenttype['slug'], $this->config['ignore_contenttype'])) {
-                if (isset($contenttype['listing_template'])) {
-                    $links[] = array( 'link' => $this->app['paths']['root'].$contenttype['slug'], 'title' => $contenttype['name'] );
+            if (!in_array($contenttype['slug'], $this->config['ignore_contenttype']) && !$contenttype['viewless']) {
+                $baseDepth = 0;
+                if (isset($contenttype['listing_template']) && !$this->config['ignore_listing']) {
+                    $baseDepth = 1;
+                    $links[] = array( 'link' => $this->app['paths']['root'].$contenttype['slug'], 'title' => $contenttype['name'], 'depth' => 1 );
                 }
                 $content = $this->app['storage']->getContent(
                     $contenttype['slug'],
-                    array('limit' => 10000, 'order' => 'datepublish desc')
+                    array('limit' => 10000, 'order' => 'datepublish desc', 'hydrate' => false)
                 );
                 foreach ($content as $entry) {
-                    $links[] = array('link' => $entry->link(), 'title' => $entry->getTitle(),
+                    $links[] = array('link' => $entry->link(), 'title' => $entry->getTitle(), 'depth' => $baseDepth + 1,
                         'lastmod' => date( \DateTime::W3C, strtotime($entry->get('datechanged'))));
                 }
             }
         }
 
         foreach ($links as $idx => $link) {
-            if (in_array($link['link'], $this->config['ignore'])) {
+            if ($this->linkIsIgnored($link)) {
                 unset($links[$idx]);
             }
         }
@@ -80,6 +94,28 @@ class Extension extends \Bolt\BaseExtension
 
         return new Response($body, 200, $headers);
 
+    }
+
+    public function linkIsIgnored($link)
+    {
+        if (in_array($link['link'], $this->config['ignore'])) {
+            // Perfect match
+            return true;
+        }
+
+        // use ignore as a regex
+        foreach ($this->config['ignore'] as $ignore) {
+            $pattern = str_replace('/', '\/', $ignore);
+
+            // Match on whole string so a $ignore of "/entry/" isn't the same as
+            // "/entry/.*"
+            if (preg_match("/^{$pattern}$/", $link['link'])){
+                return true;
+            }
+        }
+
+        // no absolute match + no regex match
+        return false;
     }
 
     public function sitemapXml()

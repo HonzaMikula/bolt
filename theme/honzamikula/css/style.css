@@ -807,7 +807,7 @@ pagination .prev a:focus {
 }
 #article latest-articles {
   display: block;
-  padding: 27px 0 0 0;
+  padding: 27px 13.5px 0 13.5px;
   background: #fff;
 }
 #article latest-articles article {
@@ -817,7 +817,7 @@ pagination .prev a:focus {
   margin: 0 auto 27px auto;
   min-height: 81px;
   padding: 0 0 0 108px;
-  width: 540px;
+  max-width: 540px;
 }
 #article latest-articles article.no-image {
   min-height: auto;
