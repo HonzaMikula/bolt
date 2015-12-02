@@ -813,11 +813,11 @@ pagination .prev a:focus {
 #article latest-articles article {
   position: relative;
   box-sizing: border-box;
-  display: table;
+  display: block;
   margin: 0 auto 27px auto;
   min-height: 81px;
   padding: 0 0 0 108px;
-  max-width: 540px;
+  max-width: 440px;
 }
 #article latest-articles article.no-image {
   min-height: auto;
