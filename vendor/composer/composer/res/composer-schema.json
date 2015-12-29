@@ -136,6 +136,11 @@
                     "description": "A hash of domain name => github API oauth tokens, typically {\"github.com\":\"<token>\"}.",
                     "additionalProperties": true
                 },
+                "gitlab-oauth": {
+                    "type": "object",
+                    "description": "A hash of domain name => gitlab API oauth tokens, typically {\"gitlab.com\":\"<token>\"}.",
+                    "additionalProperties": true
+                },
                 "http-basic": {
                     "type": "object",
                     "description": "A hash of domain name => {\"username\": \"...\", \"password\": \"...\"}.",
@@ -221,6 +226,13 @@
                     "type": "boolean",
                     "description": "Defaults to true. If set to false, the OAuth tokens created to access the github API will have a date instead of the machine hostname."
                 },
+                "gitlab-domains": {
+                    "type": "array",
+                    "description": "A list of domains to use in gitlab mode. This is used for custom GitLab setups, defaults to [\"gitlab.com\"].",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "archive-format": {
                     "type": "string",
                     "description": "The default archiving format when not provided on cli, defaults to \"tar\"."
@@ -257,6 +269,10 @@
                 "files": {
                     "type": "array",
                     "description": "This is an array of files that are always required on every request."
+                },
+                "exclude-from-classmap": {
+                    "type": "array",
+                    "description": "This is an array of patterns to exclude from autoload classmap generation. (e.g. \"exclude-from-classmap\": [\"/test/\", \"/tests/\", \"/Tests/\"]"
                 }
             }
         },
@@ -438,6 +454,10 @@
             "items": {
                 "type": "string"
             }
+        },
+        "abandoned": {
+            "type": ["boolean", "string"],
+            "description": "Indicates whether this package has been abandoned, it can be boolean or a package name/URL pointing to a recommended alternative. Defaults to false."
         }
     }
 }

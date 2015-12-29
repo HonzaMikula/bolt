@@ -200,7 +200,7 @@ class ValidatingArrayLoader implements LoaderInterface
         }
 
         if ($this->validateArray('autoload') && !empty($this->config['autoload'])) {
-            $types = array('psr-0', 'psr-4', 'classmap', 'files');
+            $types = array('psr-0', 'psr-4', 'classmap', 'files', 'exclude-from-classmap');
             foreach ($this->config['autoload'] as $type => $typeConfig) {
                 if (!in_array($type, $types)) {
                     $this->errors[] = 'autoload : invalid value ('.$type.'), must be one of '.implode(', ', $types);
@@ -209,7 +209,7 @@ class ValidatingArrayLoader implements LoaderInterface
                 if ($type === 'psr-4') {
                     foreach ($typeConfig as $namespace => $dirs) {
                         if ($namespace !== '' && '\\' !== substr($namespace, -1)) {
-                            $this->errors[] = 'autoload.psr-4 : invalid value ('.$namespace.'), namespaces must end with a namespace separator, should be '.$namespace.'\\';
+                            $this->errors[] = 'autoload.psr-4 : invalid value ('.$namespace.'), namespaces must end with a namespace separator, should be '.$namespace.'\\\\';
                         }
                     }
                 }

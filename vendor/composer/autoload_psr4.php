@@ -7,6 +7,7 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'UAParser\\' => array($vendorDir . '/ua-parser/uap-php/src'),
+    'Symfony\\Polyfill\\Mbstring\\' => array($vendorDir . '/symfony/polyfill-mbstring'),
     'Symfony\\Component\\DomCrawler\\' => array($vendorDir . '/symfony/dom-crawler'),
     'Symfony\\Component\\DependencyInjection\\' => array($vendorDir . '/symfony/dependency-injection'),
     'Symfony\\Component\\CssSelector\\' => array($vendorDir . '/symfony/css-selector'),

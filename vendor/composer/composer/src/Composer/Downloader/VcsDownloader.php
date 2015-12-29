@@ -23,9 +23,13 @@ use Composer\Util\Filesystem;
  */
 abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterface
 {
+    /** @var IOInterface */
     protected $io;
+    /** @var Config */
     protected $config;
+    /** @var ProcessExecutor */
     protected $process;
+    /** @var Filesystem */
     protected $filesystem;
 
     public function __construct(IOInterface $io, Config $config, ProcessExecutor $process = null, Filesystem $fs = null)
@@ -144,6 +148,9 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
                 $logs = implode("\n", array_map(function ($line) {
                     return '      ' . $line;
                 }, explode("\n", $logs)));
+
+                // escape angle brackets for proper output in the console
+                $logs = str_replace('<', '\<', $logs);
 
                 $this->io->writeError('    '.$message);
                 $this->io->writeError($logs);
