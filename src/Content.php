@@ -485,9 +485,9 @@ class Content implements \ArrayAccess
 
         // Get the relations from the POST-ed values.
         if (!empty($values['relation']) && is_array($values['relation'])) {
-            foreach($values['relation'] as $key => $values) {
+            foreach($values['relation'] as $key => $relationValues) {
                 $this->clearRelation($key);
-                foreach($values as $value) {
+                foreach($relationValues as $value) {
                     $this->setRelation($key, $value);
                 }
             }
