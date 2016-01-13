@@ -13,7 +13,7 @@
 {% for record in records %}
             <item>
                 <title>{{ record.title|striptags }}</title>
-                <link>{{ paths.hosturl }}{{ record.link }}</link>
+                <link>{{ paths.hosturl }}{{ record.slug }}</link>
                 <pubDate>
                     {{ record.datepublish|date("r") }}
                 </pubDate>
