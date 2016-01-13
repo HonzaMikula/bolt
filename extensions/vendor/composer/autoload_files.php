@@ -6,8 +6,7 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
-    $vendorDir . '/bolt/rssfeed/init.php',
-    $vendorDir . '/bolt/sitemap/init.php',
-    $vendorDir . '/foundrycode/boltredirector/init.php',
-    $baseDir . '/../vendor/autoload.php',
+    '69457f94a2558645028071d6d3968fee' => $vendorDir . '/bolt/rssfeed/init.php',
+    '11c1b749cb5bdcb0f4ce952eb6011c08' => $vendorDir . '/bolt/sitemap/init.php',
+    '9597f20bbeeefdf7945368aa6831dcca' => $vendorDir . '/foundrycode/boltredirector/init.php',
 );

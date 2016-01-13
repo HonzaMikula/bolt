@@ -7,8 +7,6 @@
  * Author: Foundry Code / Mike Anthony
  * Minimum Bolt version: 2.0
  * Docs: http://code.foundrybusiness.co.za/bolt-redirector
- *
- * Released under the MIT License
  */
 
 namespace Bolt\Extension\FoundryCode;
@@ -216,7 +214,7 @@ class Redirector extends BaseExtension
                 $routeMatcher = "~^route\:\s+?([a-z\-_]+)$~";
                 if (preg_match($routeMatcher, $self->destination, $matches)) {
                     if (isset($self->routes[$matches[1]])) {
-                        $self->destination = trim($self->routes[$matches[1]]['path'], '/');
+                        $self->destination = $app['paths']['rooturl'].trim($self->routes[$matches[1]]['path'], '/');
                     }
                 }
 

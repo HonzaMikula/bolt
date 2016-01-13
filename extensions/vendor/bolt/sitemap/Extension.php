@@ -56,14 +56,14 @@ class Extension extends \Bolt\BaseExtension
                 $baseDepth = 0;
                 if (isset($contenttype['listing_template']) && !$this->config['ignore_listing']) {
                     $baseDepth = 1;
-                    $links[] = array( 'link' => $this->app['paths']['root'].$contenttype['slug'], 'title' => $contenttype['name'], 'depth' => 1 );
+                    $links[] = array( 'link' => $this->app['paths']['root'].$contenttype['slug'], 'title' => $contenttype['name'], 'slug' => $entry->slug(), 'depth' => 1 );
                 }
                 $content = $this->app['storage']->getContent(
                     $contenttype['slug'],
                     array('limit' => 10000, 'order' => 'datepublish desc', 'hydrate' => false)
                 );
                 foreach ($content as $entry) {
-                    $links[] = array('link' => $entry->link(), 'title' => $entry->getTitle(), 'depth' => $baseDepth + 1,
+                    $links[] = array('link' => $entry->link(), 'title' => $entry->getTitle(), 'depth' => $baseDepth + 1, 'slug' => $entry->slug(),
                         'lastmod' => date( \DateTime::W3C, strtotime($entry->get('datechanged'))));
                 }
             }

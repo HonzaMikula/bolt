@@ -9,4 +9,5 @@ return array(
     'Bolt\\Extension\\FoundryCode\\' => array($vendorDir . '/foundrycode/boltredirector'),
     'Bolt\\Extension\\Bolt\\Sitemap\\' => array($vendorDir . '/bolt/sitemap'),
     'Bolt\\Extension\\Bolt\\RSSFeed\\' => array($vendorDir . '/bolt/rssfeed', $vendorDir . '/bolt/rssfeed/src'),
+    'Bolt\\Composer\\' => array($baseDir . '/'),
 );
