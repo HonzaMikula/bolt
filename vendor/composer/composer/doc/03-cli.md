@@ -225,6 +225,9 @@ The global command allows you to run other commands like `install`, `require`
 or `update` as if you were running them from the [COMPOSER_HOME](#composer-home)
 directory.
 
+This is merely a helper to manage a project stored in a central location that
+can hold CLI tools or Composer plugins that you want to have available everywhere.
+
 This can be used to install CLI utilities globally and if you add
 `$COMPOSER_HOME/vendor/bin` to your `$PATH` environment variable. Here is an
 example:
@@ -342,6 +345,10 @@ symfony/symfony requires monolog/monolog (~1)
 
 * **--link-type:** The link types to match on, can be specified multiple
   times.
+* **--match-constraint (-m):** Filters the dependencies shown using this constraint.
+* **--invert-match-constraint (-i):** Turns --match-constraint around into a blacklist
+  insteead of a whitelist.
+* **--with-replaces:** Search for replaced packages as well.
 
 ## validate
 
@@ -581,6 +588,11 @@ To get more information about a certain command, just use `help`.
 ```sh
 php composer.phar help install
 ```
+
+## Command-line completion
+
+Command-line completion can be enabled by following instructions
+[on this page](https://github.com/bamarni/symfony-console-autocomplete).
 
 ## Environment variables
 

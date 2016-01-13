@@ -9,7 +9,7 @@
     <ul>
     {% for entry in entries %}
         {% if entry.link is defined %}
-          <li><a href="{{ entry.sluggit  }}">{{ entry.title }}</a></li>
+          <li><a href="{{ app.paths.hosturl }}/{{ entry.slug }}">{{ entry.title }}</a></li>
         {% endif %}
     {% endfor %}
     </ul>

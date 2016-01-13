@@ -3,7 +3,7 @@
     {% for entry in entries %}
         {% if entry.link is defined %}
             <url>
-                <loc>{{ app.paths.hosturl }}{{ entry.slug }}</loc>
+                <loc>{{ app.paths.hosturl }}/{{ entry.slug }}</loc>
                 {% if entry.lastmod is defined %}
                     <lastmod>{{ entry.lastmod }}</lastmod>
                 {% endif %}
