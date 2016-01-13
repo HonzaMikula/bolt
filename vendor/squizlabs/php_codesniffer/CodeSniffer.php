@@ -73,7 +73,7 @@ class PHP_CodeSniffer
      *
      * @var string
      */
-    const VERSION = '2.3.4';
+    const VERSION = '2.5.0';
 
     /**
      * Package stability; either stable, beta or alpha.
@@ -789,7 +789,37 @@ class PHP_CodeSniffer
             }
         }//end foreach
 
-        if (empty($cliValues['files']) === true) {
+        // Set custom php ini values as CLI args.
+        foreach ($ruleset->{'ini'} as $arg) {
+            if ($this->_shouldProcessElement($arg) === false) {
+                continue;
+            }
+
+            if (isset($arg['name']) === false) {
+                continue;
+            }
+
+            $name      = (string) $arg['name'];
+            $argString = $name;
+            if (isset($arg['value']) === true) {
+                $value      = (string) $arg['value'];
+                $argString .= "=$value";
+            } else {
+                $value = 'true';
+            }
+
+            $cliArgs[] = '-d';
+            $cliArgs[] = $argString;
+
+            if (PHP_CODESNIFFER_VERBOSITY > 1) {
+                echo str_repeat("\t", $depth);
+                echo "\t=> set PHP ini value $name to $value".PHP_EOL;
+            }
+        }//end foreach
+
+        if (empty($cliValues['files']) === true
+            && $rulesetDir === getcwd()
+        ) {
             // Process hard-coded file paths.
             foreach ($ruleset->{'file'} as $file) {
                 $file      = (string) $file;
@@ -2205,7 +2235,8 @@ class PHP_CodeSniffer
             // Might be an actual ruleset file itself.
             // If it has an XML extension, let's at least try it.
             if (is_file($standard) === true
-                && substr(strtolower($standard), -4) === '.xml'
+                && (substr(strtolower($standard), -4) === '.xml'
+                || substr(strtolower($standard), -9) === '.xml.dist')
             ) {
                 return true;
             }
