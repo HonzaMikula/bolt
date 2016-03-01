@@ -32,7 +32,7 @@ class Application extends Silex\Application
      */
     public function __construct(array $values = array())
     {
-        $values['bolt_version'] = '2.2.17';
+        $values['bolt_version'] = '2.2.19';
         $values['bolt_name'] = '';
         $values['bolt_released'] = false; // `true` for stable releases, `false` for alpha, beta and RC.
 

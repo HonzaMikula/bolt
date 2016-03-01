@@ -79,8 +79,6 @@
 
                     return false;
                 }
-                // Submitting, disable warning.
-                window.onbeforeunload = null;
             }
         );
 
@@ -230,6 +228,11 @@
      * @static
      * @function initSaveContinue
      * @memberof Bolt.editcontent
+     * 
+     * @fires start.bolt.content.save
+     * @fires done.bolt.content.save
+     * @fires fail.bolt.content.save
+     * @fires always.bolt.content.save
      *
      * @param {BindData} data - Editcontent configuration data
      */
@@ -261,10 +264,19 @@
             } else {
                 watchChanges();
 
+                // Trigger save started event
+                $(Bolt).trigger('start.bolt.content.save');
+
                 // Existing record. Do an 'ajaxy' post to update the record.
                 // Let the controller know we're calling AJAX and expecting to be returned JSON.
                 $.post('?returnto=ajax', $('#editcontent').serialize())
                     .done(function (data) {
+                        // Trigger save done event
+                        $(Bolt).trigger('done.bolt.content.save', data);
+                        
+                        // Submit was successful, disable warning.
+                        window.onbeforeunload = null;
+
                         $('p.lastsaved').html(savedon);
                         $('p.lastsaved').find('strong').text(moment(data.datechanged).format('MMM D, HH:mm'));
                         $('p.lastsaved').find('time').attr('datetime', moment(data.datechanged).format());
@@ -286,8 +298,14 @@
                                         $(':input[name="' + index + '[' + subindex + ']"]').val(subitem);
                                     });
                                 } else {
-                                    // Either an input or a textarea, so get by ID
-                                    $('#' + index).val(item);
+                                    var field = $('#' + index);
+                                    if (field.attr('type') === 'checkbox') {
+                                        // A checkbox, so set with prop
+                                        field.prop('checked', (item == "on"));
+                                    } else {
+                                        // Either an input or a textarea, so set with val
+                                        field.val(item);
+                                    }
 
                                     // If there is a CKEditor attached to our element, update it
                                     if (ckeditor && ckeditor.instances[index]) {
@@ -309,9 +327,15 @@
                         watchChanges();
                     })
                     .fail(function(){
+                        // Trigger save failed event 
+                        $(Bolt).trigger('fail.bolt.content.save');
+
                         $('p.lastsaved').text(msgNotSaved);
                     })
                     .always(function(){
+                        // Trigger save always event
+                        $(Bolt).trigger('always.bolt.content.save');
+
                         // Re-enable buttons
                         window.setTimeout(function(){
                             $('#sidebarsavecontinuebutton, #savecontinuebutton').removeClass('disabled');
@@ -350,13 +374,6 @@
                 },
                 1000
             );
-
-            // Initialize handler for 'closing window'
-            window.onbeforeunload = function () {
-                if ((hasChanged()) || (bolt.liveEditor.active)) {
-                    return bolt.data('editcontent.msg.change_quit');
-                 }
-            };
         }
     }
 
@@ -412,6 +429,12 @@
                 }
             }
         });
+        // Initialize handler for 'closing window'
+        window.onbeforeunload = function () {
+            if ((hasChanged()) || (bolt.liveEditor.active)) {
+                return bolt.data('editcontent.msg.change_quit');
+            }
+        };
     }
 
     /**
