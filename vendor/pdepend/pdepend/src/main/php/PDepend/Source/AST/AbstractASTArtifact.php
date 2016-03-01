@@ -90,7 +90,7 @@ abstract class AbstractASTArtifact implements ASTArtifact
      *
      * @var string
      */
-    protected $docComment = null;
+    protected $comment = null;
 
     /**
      * Constructs a new item for the given <b>$name</b>.
@@ -174,24 +174,71 @@ abstract class AbstractASTArtifact implements ASTArtifact
     }
 
     /**
-     * Returns the doc comment for this item or <b>null</b>.
+     * Returns a doc comment for this node or <b>null</b> when no comment was
+     * found.
      *
      * @return string
      */
+    public function getComment()
+    {
+        return $this->comment;
+    }
+
+    /**
+     * Sets the raw doc comment for this node.
+     *
+     * @param string $comment
+     * @return void
+     */
+    public function setComment($comment)
+    {
+        $this->comment = $comment;
+    }
+
+    /**
+     * Returns the line number where the class or interface declaration starts.
+     *
+     * @return integer
+     */
+    public function getStartLine()
+    {
+        return $this->startLine;
+    }
+
+    /**
+     * Returns the line number where the class or interface declaration ends.
+     *
+     * @return integer
+     */
+    public function getEndLine()
+    {
+        return $this->endLine;
+    }
+
+    // BEGIN@deprecated
+
+    /**
+     * Returns the doc comment for this item or <b>null</b>.
+     *
+     * @return string
+     * @deprecated Use getComment() inherit from ASTNode instead.
+     */
     public function getDocComment()
     {
-        return $this->docComment;
+        return $this->getComment();
     }
 
     /**
      * Sets the doc comment for this item.
      *
-     * @param string $docComment The doc comment block.
-     *
+     * @param string $docComment
      * @return void
+     * @deprecated Use setComment() inherit from ASTNode instead.
      */
     public function setDocComment($docComment)
     {
-        $this->docComment = $docComment;
+        $this->setComment($docComment);
     }
+
+    // END@deprecated
 }

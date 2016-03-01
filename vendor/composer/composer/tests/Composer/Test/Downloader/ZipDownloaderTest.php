@@ -13,11 +13,11 @@
 namespace Composer\Test\Downloader;
 
 use Composer\Downloader\ZipDownloader;
+use Composer\TestCase;
 use Composer\Util\Filesystem;
 
-class ZipDownloaderTest extends \PHPUnit_Framework_TestCase
+class ZipDownloaderTest extends TestCase
 {
-
     /**
      * @var string
      */
@@ -28,7 +28,8 @@ class ZipDownloaderTest extends \PHPUnit_Framework_TestCase
         if (!class_exists('ZipArchive')) {
             $this->markTestSkipped('zip extension missing');
         }
-        $this->testDir = sys_get_temp_dir().'/composer-zip-test-vendor';
+
+        $this->testDir = $this->getUniqueTmpDirectory();
     }
 
     public function tearDown()
@@ -55,7 +56,19 @@ class ZipDownloaderTest extends \PHPUnit_Framework_TestCase
 
         $io = $this->getMock('Composer\IO\IOInterface');
         $config = $this->getMock('Composer\Config');
-        $config->expects($this->any())
+        $config->expects($this->at(0))
+            ->method('get')
+            ->with('disable-tls')
+            ->will($this->returnValue(false));
+        $config->expects($this->at(1))
+            ->method('get')
+            ->with('cafile')
+            ->will($this->returnValue(null));
+        $config->expects($this->at(2))
+            ->method('get')
+            ->with('capath')
+            ->will($this->returnValue(null));
+        $config->expects($this->at(3))
             ->method('get')
             ->with('vendor-dir')
             ->will($this->returnValue($this->testDir));

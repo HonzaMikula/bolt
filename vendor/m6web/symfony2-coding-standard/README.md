@@ -12,13 +12,13 @@ We also added to this project our own standard for our Symfony2 developments ent
 ## Installation
 
 1. [Install composer](https://getcomposer.org/download/)
-2. Create a composer.json file who contain:
+2. Create a composer.json file which contains:
 
     ```json
     {
         "require-dev": {
-            "m6web/coke": "~1.1",
-            "m6web/Symfony2-coding-standard": "~1.1"
+            "m6web/coke": "~2.1",
+            "m6web/Symfony2-coding-standard": "~3.1"
         }
     }
     ```

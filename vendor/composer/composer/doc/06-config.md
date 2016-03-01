@@ -17,7 +17,26 @@ in the PHP include path.
 ## preferred-install
 
 Defaults to `auto` and can be any of `source`, `dist` or `auto`. This option
-allows you to set the install method Composer will prefer to use.
+allows you to set the install method Composer will prefer to use. Can
+optionally be a hash of patterns for more granular install preferences.
+
+```json
+{
+    "config": {
+        "preferred-install": {
+            "my-organization/stable-package": "dist",
+            "my-organization/*": "source",
+            "partner-organization/*": "auto",
+            "*": "dist"
+        }
+    }
+}
+```
+
+> **Note:** Order matters. More specific patterns should be earlier than
+> more relaxed patterns. When mixing the string notation with the hash
+> configuration in global and package configurations the string notation
+> is translated to a `*` package pattern.
 
 ## store-auths
 
@@ -39,6 +58,38 @@ private repositories on github and to circumvent the low IP-based rate limiting
 of their API. [Read
 more](articles/troubleshooting.md#api-rate-limit-and-oauth-tokens) on how to get
 an OAuth token for GitHub.
+
+## gitlab-oauth
+
+A list of domain names and oauth keys. For example using `{"gitlab.com":
+"oauthtoken"}` as the value of this option will use `oauthtoken` to access
+private repositories on gitlab.
+
+## disable-tls
+
+Defaults to `false`. If set to true all HTTPS URLs will be tried with HTTP
+instead and no network level encryption is performed. Enabling this is a
+security risk and is NOT recommended. The better way is to enable the
+php_openssl extension in php.ini.
+
+## secure-http
+
+Defaults to `true`. If set to true only HTTPS URLs are allowed to be
+downloaded via Composer. If you really absolutely need HTTP access to something
+then you can disable it, but using [Let's Encrypt](https://letsencrypt.org/) to
+get a free SSL certificate is generally a better alternative.
+
+## cafile
+
+Location of Certificate Authority file on local filesystem. In PHP 5.6+ you
+should rather set this via openssl.cafile in php.ini, although PHP 5.6+ should
+be able to detect your system CA file automatically.
+
+## capath
+
+If cafile is not specified or if the certificate is not found there, the
+directory pointed to by capath is searched for a suitable certificate.
+capath must be a correctly hashed certificate directory.
 
 ## http-basic
 
@@ -68,11 +119,20 @@ vendor-dir and all `*-dir` options below.
 Defaults to `vendor/bin`. If a project includes binaries, they will be symlinked
 into this directory.
 
+## data-dir
+
+Defaults to `C:\Users\<user>\AppData\Roaming\Composer` on Windows,
+`$XDG_DATA_HOME/composer` on unix systems that follow the XDG Base Directory
+Specifications, and `$home` on other unix systems. Right now it is only
+used for storing past composer.phar files to be able to rollback to older
+versions. See also [COMPOSER_HOME](03-cli.md#composer-home).
+
 ## cache-dir
 
-Defaults to `$COMPOSER_HOME/cache` on unix systems and
-`C:\Users\<user>\AppData\Local\Composer` on Windows. Stores all the caches used
-by Composer. See also [COMPOSER_HOME](03-cli.md#composer-home).
+Defaults to `C:\Users\<user>\AppData\Local\Composer` on Windows,
+`$XDG_CACHE_HOME/composer` on unix systems that follow the XDG Base Directory
+Specifications, and `$home/cache` on other unix systems. Stores all the caches
+used by Composer. See also [COMPOSER_HOME](03-cli.md#composer-home).
 
 ## cache-files-dir
 

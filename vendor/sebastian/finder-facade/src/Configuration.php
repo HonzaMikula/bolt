@@ -1,6 +1,6 @@
 <?php
 /*
- * This file is part of the Comparator package.
+ * This file is part of the Finder Facade package.
  *
  * (c) Sebastian Bergmann <sebastian@phpunit.de>
  *
@@ -24,11 +24,7 @@ use TheSeer\fDOM\fDOMDocument;
  * </fileset>
  * </code>
  *
- * @author    Sebastian Bergmann <sebastian@phpunit.de>
- * @copyright Sebastian Bergmann <sebastian@phpunit.de>
- * @license   http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
- * @link      http://github.com/sebastianbergmann/finder-facade/tree
- * @since     Class available since Release 1.0.0
+ * @since Class available since Release 1.0.0
  */
 class Configuration
 {
@@ -54,7 +50,8 @@ class Configuration
     }
 
     /**
-     * @param  string $xpath
+     * @param string $xpath
+     *
      * @return array
      */
     public function parse($xpath = '')
@@ -95,7 +92,8 @@ class Configuration
     }
 
     /**
-     * @param  string $path
+     * @param string $path
+     *
      * @return string
      */
     protected function toAbsolutePath($path)

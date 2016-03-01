@@ -611,6 +611,28 @@ class PHP_CodeSniffer_Tokenizers_PHP
             }
 
             /*
+                Before PHP 7, the <=> operator was tokenized as
+                T_IS_SMALLER_OR_EQUAL followed by T_GREATER_THAN.
+                So look for and combine these tokens in earlier versions.
+            */
+
+            if ($tokenIsArray === true
+                && $token[0] === T_IS_SMALLER_OR_EQUAL
+                && isset($tokens[($stackPtr + 1)]) === true
+                && $tokens[($stackPtr + 1)][0] === '>'
+            ) {
+                $newToken            = array();
+                $newToken['code']    = T_SPACESHIP;
+                $newToken['type']    = 'T_SPACESHIP';
+                $newToken['content'] = '<=>';
+                $finalTokens[$newStackPtr] = $newToken;
+
+                $newStackPtr++;
+                $stackPtr++;
+                continue;
+            }
+
+            /*
                 Emulate traits in PHP versions less than 5.4.
             */
 
@@ -917,47 +939,80 @@ class PHP_CodeSniffer_Tokenizers_PHP
                 $tokens[$i]['scope_condition'] = $tokens[$tokens[$i]['scope_opener']]['scope_condition'];
             }
 
-            if ($tokens[$i]['code'] === T_FUNCTION && isset($tokens[$i]['scope_opener']) === true) {
+            if ($tokens[$i]['code'] === T_FUNCTION) {
+                // Context sensitive keywords support.
+                for ($x = ($i + 1); $i < $numTokens; $x++) {
+                    if (isset(PHP_CodeSniffer_Tokens::$emptyTokens[$tokens[$x]['code']]) === false) {
+                        // Non-whitespace content.
+                        break;
+                    }
+                }
+
+                if (in_array($tokens[$x]['code'], array(T_STRING, T_OPEN_PARENTHESIS, T_BITWISE_AND), true) === false) {
+                    if (PHP_CODESNIFFER_VERBOSITY > 1) {
+                        $line = $tokens[$x]['line'];
+                        $type = $tokens[$x]['type'];
+                        echo "\t* token $x on line $line changed from $type to T_STRING".PHP_EOL;
+                    }
+
+                    $tokens[$x]['code'] = T_STRING;
+                    $tokens[$x]['type'] = 'T_STRING';
+                }
+
                 /*
                     Detect functions that are actually closures and
                     assign them a different token.
                 */
 
-                for ($x = ($i + 1); $x < $numTokens; $x++) {
-                    if (isset(PHP_CodeSniffer_Tokens::$emptyTokens[$tokens[$x]['code']]) === false
-                        && $tokens[$x]['code'] !== T_BITWISE_AND
-                    ) {
-                        break;
-                    }
-                }
-
-                if ($tokens[$x]['code'] === T_OPEN_PARENTHESIS) {
-                    $tokens[$i]['code'] = T_CLOSURE;
-                    $tokens[$i]['type'] = 'T_CLOSURE';
-                    if (PHP_CODESNIFFER_VERBOSITY > 1) {
-                        $line = $tokens[$i]['line'];
-                        echo "\t* token $i on line $line changed from T_FUNCTION to T_CLOSURE".PHP_EOL;
-                    }
-
-                    for ($x = ($tokens[$i]['scope_opener'] + 1); $x < $tokens[$i]['scope_closer']; $x++) {
-                        if (isset($tokens[$x]['conditions'][$i]) === false) {
-                            continue;
+                if (isset($tokens[$i]['scope_opener']) === true) {
+                    for ($x = ($i + 1); $x < $numTokens; $x++) {
+                        if (isset(PHP_CodeSniffer_Tokens::$emptyTokens[$tokens[$x]['code']]) === false
+                            && $tokens[$x]['code'] !== T_BITWISE_AND
+                        ) {
+                            break;
                         }
+                    }
 
-                        $tokens[$x]['conditions'][$i] = T_CLOSURE;
+                    if ($tokens[$x]['code'] === T_OPEN_PARENTHESIS) {
+                        $tokens[$i]['code'] = T_CLOSURE;
+                        $tokens[$i]['type'] = 'T_CLOSURE';
                         if (PHP_CODESNIFFER_VERBOSITY > 1) {
-                            $type = $tokens[$x]['type'];
-                            echo "\t\t* cleaned $x ($type) *".PHP_EOL;
+                            $line = $tokens[$i]['line'];
+                            echo "\t* token $i on line $line changed from T_FUNCTION to T_CLOSURE".PHP_EOL;
+                        }
+
+                        for ($x = ($tokens[$i]['scope_opener'] + 1); $x < $tokens[$i]['scope_closer']; $x++) {
+                            if (isset($tokens[$x]['conditions'][$i]) === false) {
+                                continue;
+                            }
+
+                            $tokens[$x]['conditions'][$i] = T_CLOSURE;
+                            if (PHP_CODESNIFFER_VERBOSITY > 1) {
+                                $type = $tokens[$x]['type'];
+                                echo "\t\t* cleaned $x ($type) *".PHP_EOL;
+                            }
                         }
                     }
-                }
+
+                    $tokenAfterReturnTypeHint = $tokens[$i]['scope_opener'];
+                } else if (isset($tokens[$i]['parenthesis_closer']) === true) {
+                    for ($x = ($tokens[$i]['parenthesis_closer'] + 1); $i < $numTokens; $x++) {
+                        if ($tokens[$x]['code'] === T_SEMICOLON) {
+                            $tokenAfterReturnTypeHint = $x;
+                            break;
+                        }
+                    }
+                } else {
+                    // Probably a syntax error.
+                    continue;
+                }//end if
 
                 /*
                     Detect function return values and assign them
                     a special token, because PHP doesn't.
                 */
 
-                for ($x = ($tokens[$i]['scope_opener'] - 1); $x > $i; $x--) {
+                for ($x = ($tokenAfterReturnTypeHint - 1); $x > $i; $x--) {
                     if (isset(PHP_CodeSniffer_Tokens::$emptyTokens[$tokens[$x]['code']]) === false) {
                         if ($tokens[$x]['code'] === T_STRING || $tokens[$x]['code'] === T_ARRAY) {
                             if (PHP_CODESNIFFER_VERBOSITY > 1) {
@@ -1072,6 +1127,70 @@ class PHP_CodeSniffer_Tokenizers_PHP
                     $line = $tokens[$i]['line'];
                     echo "\t* token $i on line $line changed from T_ECHO to T_OPEN_TAG_WITH_ECHO".PHP_EOL;
                 }
+            } else if ($tokens[$i]['code'] === T_TRUE
+                || $tokens[$i]['code'] === T_FALSE
+                || $tokens[$i]['code'] === T_NULL
+            ) {
+                for ($x = ($i + 1); $i < $numTokens; $x++) {
+                    if (isset(PHP_CodeSniffer_Tokens::$emptyTokens[$tokens[$x]['code']]) === false) {
+                        // Non-whitespace content.
+                        break;
+                    }
+                }
+
+                $context = array(
+                            T_OBJECT_OPERATOR      => true,
+                            T_NS_SEPARATOR         => true,
+                            T_PAAMAYIM_NEKUDOTAYIM => true,
+                           );
+                if (isset($context[$tokens[$x]['code']]) === true) {
+                    if (PHP_CODESNIFFER_VERBOSITY > 1) {
+                        $line = $tokens[$i]['line'];
+                        $type = $tokens[$i]['type'];
+                        echo "\t* token $i on line $line changed from $type to T_STRING".PHP_EOL;
+                    }
+
+                    $tokens[$i]['code'] = T_STRING;
+                    $tokens[$i]['type'] = 'T_STRING';
+                }
+            } else if ($tokens[$i]['code'] === T_CONST) {
+                // Context sensitive keywords support.
+                for ($x = ($i + 1); $i < $numTokens; $x++) {
+                    if (isset(PHP_CodeSniffer_Tokens::$emptyTokens[$tokens[$x]['code']]) === false) {
+                        // Non-whitespace content.
+                        break;
+                    }
+                }
+
+                if ($tokens[$x]['code'] !== T_STRING) {
+                    if (PHP_CODESNIFFER_VERBOSITY > 1) {
+                        $line = $tokens[$x]['line'];
+                        $type = $tokens[$x]['type'];
+                        echo "\t* token $x on line $line changed from $type to T_STRING".PHP_EOL;
+                    }
+
+                    $tokens[$x]['code'] = T_STRING;
+                    $tokens[$x]['type'] = 'T_STRING';
+                }
+            } else if ($tokens[$i]['code'] === T_PAAMAYIM_NEKUDOTAYIM) {
+                // Context sensitive keywords support.
+                for ($x = ($i + 1); $i < $numTokens; $x++) {
+                    if (isset(PHP_CodeSniffer_Tokens::$emptyTokens[$tokens[$x]['code']]) === false) {
+                        // Non-whitespace content.
+                        break;
+                    }
+                }
+
+                if (in_array($tokens[$x]['code'], array(T_STRING, T_VARIABLE, T_DOLLAR), true) === false) {
+                    if (PHP_CODESNIFFER_VERBOSITY > 1) {
+                        $line = $tokens[$x]['line'];
+                        $type = $tokens[$x]['type'];
+                        echo "\t* token $x on line $line changed from $type to T_STRING".PHP_EOL;
+                    }
+
+                    $tokens[$x]['code'] = T_STRING;
+                    $tokens[$x]['type'] = 'T_STRING';
+                }
             }//end if
 
             if (($tokens[$i]['code'] !== T_CASE
@@ -1124,13 +1243,24 @@ class PHP_CodeSniffer_Tokenizers_PHP
             // not whatever it already is. The opener needs to be the opening curly
             // brace so everything matches up.
             $newCloser = $tokens[$x]['bracket_closer'];
-            $tokens[$i]['scope_closer']            = $newCloser;
-            $tokens[$x]['scope_closer']            = $newCloser;
-            $tokens[$i]['scope_opener']            = $x;
-            $tokens[$x]['scope_condition']         = $i;
-            $tokens[$newCloser]['scope_condition'] = $i;
-            $tokens[$newCloser]['scope_opener']    = $x;
-            $tokens[$newCloser]['scope_closer']    = $newCloser;
+            foreach (array($i, $x, $newCloser) as $index) {
+                $tokens[$index]['scope_condition'] = $i;
+                $tokens[$index]['scope_opener']    = $x;
+                $tokens[$index]['scope_closer']    = $newCloser;
+            }
+
+            unset($tokens[$scopeOpener]['scope_condition']);
+            unset($tokens[$scopeOpener]['scope_opener']);
+            unset($tokens[$scopeOpener]['scope_closer']);
+            unset($tokens[$scopeCloser]['scope_condition']);
+            unset($tokens[$scopeCloser]['scope_opener']);
+            unset($tokens[$scopeCloser]['scope_closer']);
+            unset($tokens[$x]['bracket_opener']);
+            unset($tokens[$x]['bracket_closer']);
+            unset($tokens[$newCloser]['bracket_opener']);
+            unset($tokens[$newCloser]['bracket_closer']);
+            $tokens[$scopeCloser]['conditions'][] = $i;
+
             if (PHP_CODESNIFFER_VERBOSITY > 1) {
                 $line      = $tokens[$i]['line'];
                 $tokenType = $tokens[$i]['type'];

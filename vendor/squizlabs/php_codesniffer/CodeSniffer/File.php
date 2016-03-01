@@ -1886,9 +1886,8 @@ class PHP_CodeSniffer_File
         &$ignore=0
     ) {
         if (PHP_CODESNIFFER_VERBOSITY > 1) {
-            if ($depth === 1) {
-                echo "\t*** START SCOPE MAP ***".PHP_EOL;
-            }
+            echo str_repeat("\t", $depth);
+            echo "=> Begin scope map recursion at token $stackPtr with depth $depth".PHP_EOL;
 
             $isWin = false;
             if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
@@ -2176,10 +2175,11 @@ class PHP_CodeSniffer_File
                         throw new PHP_CodeSniffer_Exception('Maximum nesting level reached; file could not be processed');
                     }
 
+                    $oldDepth = $depth;
                     if ($isShared === true
                         && isset($tokenizer->scopeOpeners[$tokenType]['with'][$currType]) === true
                     ) {
-                        // Don't allow the depth to incremement because this is
+                        // Don't allow the depth to increment because this is
                         // possibly not a true nesting if we are sharing our closer.
                         // This can happen, for example, when a SWITCH has a large
                         // number of CASE statements with the same shared BREAK.
@@ -2195,6 +2195,8 @@ class PHP_CodeSniffer_File
                         ($depth + 1),
                         $ignore
                     );
+
+                    $depth = $oldDepth;
 
                     if (isset($tokenizer->scopeOpeners[$tokenType]['end'][T_CLOSE_CURLY_BRACKET]) === true) {
                         $ignore = $oldIgnore;
@@ -2727,6 +2729,7 @@ class PHP_CodeSniffer_File
         $defaultStart    = null;
         $paramCount      = 0;
         $passByReference = false;
+        $variableLength  = false;
         $typeHint        = '';
 
         for ($i = ($opener + 1); $i <= $closer; $i++) {
@@ -2754,6 +2757,9 @@ class PHP_CodeSniffer_File
                 break;
             case T_VARIABLE:
                 $currVar = $i;
+                break;
+            case T_ELLIPSIS:
+                $variableLength = true;
                 break;
             case T_ARRAY_HINT:
             case T_CALLABLE:
@@ -2814,11 +2820,13 @@ class PHP_CodeSniffer_File
                 }
 
                 $vars[$paramCount]['pass_by_reference'] = $passByReference;
+                $vars[$paramCount]['variable_length']   = $variableLength;
                 $vars[$paramCount]['type_hint']         = $typeHint;
 
                 // Reset the vars, as we are about to process the next parameter.
                 $defaultStart    = null;
                 $passByReference = false;
+                $variableLength  = false;
                 $typeHint        = '';
 
                 $paramCount++;
@@ -3448,7 +3456,8 @@ class PHP_CodeSniffer_File
 
             // Skip nested statements.
             if (isset($this->_tokens[$i]['scope_closer']) === true
-                && $i === $this->_tokens[$i]['scope_opener']
+                && ($i === $this->_tokens[$i]['scope_opener']
+                || $i === $this->_tokens[$i]['scope_condition'])
             ) {
                 $i = $this->_tokens[$i]['scope_closer'];
             } else if (isset($this->_tokens[$i]['bracket_closer']) === true

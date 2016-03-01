@@ -140,6 +140,13 @@ interface Builder extends \IteratorAggregate
     public function buildClass($qualifiedName);
 
     /**
+     * Builds an anonymous class instance.
+     *
+     * @return \PDepend\Source\AST\ASTAnonymousClass
+     */
+    public function buildAnonymousClass();
+
+    /**
      * This method will try to find an already existing instance for the given
      * qualified name. It will create a new {@link \PDepend\Source\AST\ASTClass}
      * instance when no matching type exists.
@@ -351,10 +358,11 @@ interface Builder extends \IteratorAggregate
     /**
      * Builds a new expression node.
      *
+     * @param string $image
      * @return \PDepend\Source\AST\ASTExpression
-     * @since  0.9.8
+     * @since 0.9.8
      */
-    public function buildAstExpression();
+    public function buildAstExpression($image = null);
 
     /**
      * Builds a new assignment expression node.
@@ -497,6 +505,20 @@ interface Builder extends \IteratorAggregate
      * @since  0.9.8
      */
     public function buildAstConditionalExpression();
+
+    /**
+     * Builds a new print-expression.
+     *
+     * <code>
+     * -------------
+     * print "qafoo";
+     * -------------
+     * </code>
+     *
+     * @return \PDepend\Source\AST\ASTPrintExpression
+     * @since 2.3
+     */
+    public function buildAstPrintExpression();
 
     /**
      * Build a new shift left expression.

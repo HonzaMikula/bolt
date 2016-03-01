@@ -14,12 +14,12 @@ namespace Composer\Command;
 
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\DefaultPolicy;
-use Composer\Factory;
 use Composer\Package\CompletePackageInterface;
-use Composer\Semver\VersionParser;
+use Composer\Package\Version\VersionParser;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Package\PackageInterface;
+use Composer\Util\Platform;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
@@ -30,6 +30,7 @@ use Composer\Repository\CompositeRepository;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
+use Composer\Repository\RepositoryFactory;
 use Composer\Spdx\SpdxLicenses;
 
 /**
@@ -37,7 +38,7 @@ use Composer\Spdx\SpdxLicenses;
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Jérémy Romey <jeremyFreeAgent>
  */
-class ShowCommand extends Command
+class ShowCommand extends BaseCommand
 {
     protected $versionParser;
     protected $colors;
@@ -51,7 +52,8 @@ class ShowCommand extends Command
             ->setDefinition(array(
                 new InputArgument('package', InputArgument::OPTIONAL, 'Package to inspect'),
                 new InputArgument('version', InputArgument::OPTIONAL, 'Version or version constraint to inspect'),
-                new InputOption('installed', 'i', InputOption::VALUE_NONE, 'List installed packages only'),
+                new InputOption('all', null, InputOption::VALUE_NONE, 'List all packages'),
+                new InputOption('installed', 'i', InputOption::VALUE_NONE, 'List installed packages only (enabled by default, only present for BC).'),
                 new InputOption('platform', 'p', InputOption::VALUE_NONE, 'List platform packages only'),
                 new InputOption('available', 'a', InputOption::VALUE_NONE, 'List available packages only'),
                 new InputOption('self', 's', InputOption::VALUE_NONE, 'Show the root package information'),
@@ -78,9 +80,14 @@ EOT
         $composer = $this->getComposer(false);
         $io = $this->getIO();
 
-        if ($input->getOption('tree') && !$input->getOption('installed')) {
-            $io->writeError('The --tree (-t) option is only usable in combination with --installed (-i) or by passing a single package name to show, assuming -i');
-            $input->setOption('installed', true);
+        if ($input->getOption('installed')) {
+            $io->writeError('<warning>You are using the deprecated option "installed". Only installed packages are shown by default now. The --all option can be used to show all packages.</warning>');
+        }
+
+        if ($input->getOption('tree') && ($input->getOption('all') || $input->getOption('available'))) {
+            $io->writeError('The --tree (-t) option is not usable in combination with --all or --available (-a)');
+
+            return;
         }
 
         // init repos
@@ -95,26 +102,26 @@ EOT
             $repos = $installedRepo = new ArrayRepository(array($package));
         } elseif ($input->getOption('platform')) {
             $repos = $installedRepo = $platformRepo;
-        } elseif ($input->getOption('installed')) {
-            $repos = $installedRepo = $this->getComposer()->getRepositoryManager()->getLocalRepository();
         } elseif ($input->getOption('available')) {
             $installedRepo = $platformRepo;
             if ($composer) {
                 $repos = new CompositeRepository($composer->getRepositoryManager()->getRepositories());
             } else {
-                $defaultRepos = Factory::createDefaultRepositories($io);
+                $defaultRepos = RepositoryFactory::defaultRepos($io);
                 $repos = new CompositeRepository($defaultRepos);
                 $io->writeError('No composer.json found in the current directory, showing available packages from ' . implode(', ', array_keys($defaultRepos)));
             }
-        } elseif ($composer) {
+        } elseif ($input->getOption('all') && $composer) {
             $localRepo = $composer->getRepositoryManager()->getLocalRepository();
             $installedRepo = new CompositeRepository(array($localRepo, $platformRepo));
             $repos = new CompositeRepository(array_merge(array($installedRepo), $composer->getRepositoryManager()->getRepositories()));
-        } else {
-            $defaultRepos = Factory::createDefaultRepositories($io);
+        } elseif ($input->getOption('all')) {
+            $defaultRepos = RepositoryFactory::defaultRepos($io);
             $io->writeError('No composer.json found in the current directory, showing available packages from ' . implode(', ', array_keys($defaultRepos)));
             $installedRepo = $platformRepo;
             $repos = new CompositeRepository(array_merge(array($installedRepo), $defaultRepos));
+        } else {
+            $repos = $installedRepo = $this->getComposer()->getRepositoryManager()->getLocalRepository();
         }
 
         if ($composer) {
@@ -124,7 +131,6 @@ EOT
 
         // show single package or single version
         if ($input->getArgument('package') || !empty($package)) {
-            $versions = array();
             if (empty($package)) {
                 list($package, $versions) = $this->getPackage($installedRepo, $repos, $input->getArgument('package'), $input->getArgument('version'));
 
@@ -136,9 +142,9 @@ EOT
             }
 
             if ($input->getOption('tree')) {
-                $this->displayPackageTree($package, $installedRepo, $repos, $output);
+                $this->displayPackageTree($package, $installedRepo, $repos);
             } else {
-                $this->printMeta($package, $versions, $installedRepo, $repos);
+                $this->printMeta($package, $versions, $installedRepo);
                 $this->printLinks($package, 'requires');
                 $this->printLinks($package, 'devRequires', 'requires (dev)');
                 if ($package->getSuggests()) {
@@ -165,7 +171,7 @@ EOT
 
             foreach ($installedRepo->getPackages() as $package) {
                 if (in_array($package->getName(), $rootRequires, true)) {
-                    $this->displayPackageTree($package, $installedRepo, $repos, $output);
+                    $this->displayPackageTree($package, $installedRepo, $repos);
                 }
             }
 
@@ -208,7 +214,7 @@ EOT
             }
         }
 
-        $showAllTypes = !$input->getOption('platform') && !$input->getOption('installed') && !$input->getOption('available');
+        $showAllTypes = $input->getOption('all');
         $indent = $showAllTypes ? '  ' : '';
         foreach (array('<info>platform</info>:' => true, '<comment>available</comment>:' => false, '<info>installed</info>:' => true) as $type => $showVersion) {
             if (isset($packages[$type])) {
@@ -232,7 +238,7 @@ EOT
                     // outside of a real terminal, use space without a limit
                     $width = PHP_INT_MAX;
                 }
-                if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+                if (Platform::isWindows()) {
                     $width--;
                 }
 
@@ -246,10 +252,10 @@ EOT
                 $writeDescription = !$input->getOption('name-only') && !$input->getOption('path') && ($nameLength + ($showVersion ? $versionLength : 0) + 24 <= $width);
                 foreach ($packages[$type] as $package) {
                     if (is_object($package)) {
-                        $output->write($indent . str_pad($package->getPrettyName(), $nameLength, ' '), false);
+                        $io->write($indent . str_pad($package->getPrettyName(), $nameLength, ' '), false);
 
                         if ($writeVersion) {
-                            $output->write(' ' . str_pad($package->getFullPrettyVersion(), $versionLength, ' '), false);
+                            $io->write(' ' . str_pad($package->getFullPrettyVersion(), $versionLength, ' '), false);
                         }
 
                         if ($writeDescription) {
@@ -258,15 +264,15 @@ EOT
                             if (strlen($description) > $remaining) {
                                 $description = substr($description, 0, $remaining - 3) . '...';
                             }
-                            $output->write(' ' . $description);
+                            $io->write(' ' . $description, false);
                         }
 
                         if ($writePath) {
                             $path = strtok(realpath($composer->getInstallationManager()->getInstallPath($package)), "\r\n");
-                            $output->write(' ' . $path);
+                            $io->write(' ' . $path, false);
                         }
                     } else {
-                        $output->write($indent . $package);
+                        $io->write($indent . $package, false);
                     }
                     $io->write('');
                 }
@@ -458,7 +464,7 @@ EOT
     /**
      * Init styles for tree
      *
-     * @param  OutputInterface $output
+     * @param OutputInterface $output
      */
     protected function initStyles(OutputInterface $output)
     {
@@ -479,20 +485,19 @@ EOT
     /**
      * Display the tree
      *
-     * @param  PackageInterface|string $package
-     * @param  RepositoryInterface     $installedRepo
-     * @param  RepositoryInterface     $distantRepos
-     * @param  OutputInterface         $output
+     * @param PackageInterface|string $package
+     * @param RepositoryInterface     $installedRepo
+     * @param RepositoryInterface     $distantRepos
      */
-    protected function displayPackageTree(PackageInterface $package, RepositoryInterface $installedRepo, RepositoryInterface $distantRepos, OutputInterface $output)
+    protected function displayPackageTree(PackageInterface $package, RepositoryInterface $installedRepo, RepositoryInterface $distantRepos)
     {
         $packagesInTree = array();
         $packagesInTree[] = $package;
 
-        $output->write(sprintf('<info>%s</info>', $package->getPrettyName()));
-        $output->write(' ' . $package->getPrettyVersion());
-        $output->write(' ' . strtok($package->getDescription(), "\r\n"));
-        $output->writeln('');
+        $io = $this->getIO();
+        $io->write(sprintf('<info>%s</info>', $package->getPrettyName()), false);
+        $io->write(' ' . $package->getPrettyVersion(), false);
+        $io->write(' ' . strtok($package->getDescription(), "\r\n"));
 
         if (is_object($package)) {
             $requires = $package->getRequires();
@@ -516,7 +521,7 @@ EOT
 
                 $packagesInTree[] = $requireName;
 
-                $this->displayTree($requireName, $require, $installedRepo, $distantRepos, $packagesInTree, $output, $treeBar, $level + 1);
+                $this->displayTree($requireName, $require, $installedRepo, $distantRepos, $packagesInTree, $treeBar, $level + 1);
             }
         }
     }
@@ -524,16 +529,15 @@ EOT
     /**
      * Display a package tree
      *
-     * @param  string                  $name
-     * @param  PackageInterface|string $package
-     * @param  RepositoryInterface     $installedRepo
-     * @param  RepositoryInterface     $distantRepos
-     * @param  array                   $packagesInTree
-     * @param  OutputInterface         $output
-     * @param  string                  $previousTreeBar
-     * @param  integer                 $level
+     * @param string                  $name
+     * @param PackageInterface|string $package
+     * @param RepositoryInterface     $installedRepo
+     * @param RepositoryInterface     $distantRepos
+     * @param array                   $packagesInTree
+     * @param string                  $previousTreeBar
+     * @param int                     $level
      */
-    protected function displayTree($name, $package, RepositoryInterface $installedRepo, RepositoryInterface $distantRepos, array $packagesInTree, OutputInterface $output, $previousTreeBar = '├', $level = 1)
+    protected function displayTree($name, $package, RepositoryInterface $installedRepo, RepositoryInterface $distantRepos, array $packagesInTree, $previousTreeBar = '├', $level = 1)
     {
         $previousTreeBar = str_replace('├', '│', $previousTreeBar);
         list($package, $versions) = $this->getPackage($installedRepo, $distantRepos, $name, $package->getPrettyConstraint() === 'self.version' ? $package->getConstraint() : $package->getPrettyConstraint());
@@ -555,7 +559,7 @@ EOT
                 $treeBar = str_replace('└', ' ', $treeBar);
                 if (!in_array($requireName, $packagesInTree)) {
                     $packagesInTree[] = $requireName;
-                    $this->displayTree($requireName, $require, $installedRepo, $distantRepos, $packagesInTree, $output, $treeBar, $level + 1);
+                    $this->displayTree($requireName, $require, $installedRepo, $distantRepos, $packagesInTree, $treeBar, $level + 1);
                 }
             }
         }

@@ -45,7 +45,6 @@ return array(
     'PHPUnit_Extension_FunctionMocker' => array($vendorDir . '/lstrojny/phpunit-function-mocker/src'),
     'PHPMD\\' => array($vendorDir . '/phpmd/phpmd/src/main/php'),
     'PHPExif' => array($vendorDir . '/miljar/php-exif/lib'),
-    'PDepend\\' => array($vendorDir . '/pdepend/pdepend/src/main/php'),
     'Maid\\' => array($vendorDir . '/tdammers/htmlmaid/src'),
     'Hautelook' => array($vendorDir . '/hautelook/phpass/src'),
     'Doctrine\\DBAL\\' => array($vendorDir . '/doctrine/dbal/lib'),

@@ -44,8 +44,8 @@ class FilesystemTest extends TestCase
     public function setUp()
     {
         $this->fs = new Filesystem;
-        $this->workingDir = sys_get_temp_dir() . '/composer_testdir';
-        $this->testFile = sys_get_temp_dir() . '/composer_test_file';
+        $this->workingDir = $this->getUniqueTmpDirectory();
+        $this->testFile = $this->getUniqueTmpDirectory() . '/composer_test_file';
     }
 
     public function tearDown()
@@ -54,7 +54,7 @@ class FilesystemTest extends TestCase
             $this->fs->removeDirectory($this->workingDir);
         }
         if (is_file($this->testFile)) {
-            $this->fs->remove($this->testFile);
+            $this->fs->removeDirectory(dirname($this->testFile));
         }
     }
 
@@ -265,5 +265,34 @@ class FilesystemTest extends TestCase
         $this->assertTrue($result);
         $this->assertFalse(file_exists($symlinkedTrailingSlash));
         $this->assertFalse(file_exists($symlinked));
+    }
+
+    public function testJunctions()
+    {
+        @mkdir($this->workingDir . '/real/nesting/testing', 0777, true);
+        $fs = new Filesystem();
+
+        // Non-Windows systems do not support this and will return false on all tests, and an exception on creation
+        if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
+            $this->assertFalse($fs->isJunction($this->workingDir));
+            $this->assertFalse($fs->removeJunction($this->workingDir));
+            $this->setExpectedException('LogicException', 'not available on non-Windows platform');
+        }
+
+        $target = $this->workingDir . '/real/../real/nesting';
+        $junction = $this->workingDir . '/junction';
+
+        // Create and detect junction
+        $fs->junction($target, $junction);
+        $this->assertTrue($fs->isJunction($junction));
+        $this->assertFalse($fs->isJunction($target));
+        $this->assertTrue($fs->isJunction($target . '/../../junction'));
+        $this->assertFalse($fs->isJunction($junction . '/../real'));
+        $this->assertTrue($fs->isJunction($junction . '/../junction'));
+
+        // Remove junction
+        $this->assertTrue(is_dir($junction));
+        $this->assertTrue($fs->removeJunction($junction));
+        $this->assertFalse(is_dir($junction));
     }
 }

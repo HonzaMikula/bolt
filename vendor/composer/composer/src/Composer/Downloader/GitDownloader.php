@@ -14,6 +14,7 @@ namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
 use Composer\Util\Git as GitUtil;
+use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
@@ -22,7 +23,7 @@ use Composer\Config;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class GitDownloader extends VcsDownloader
+class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 {
     private $hasStashedChanges = false;
     private $hasDiscardedChanges = false;
@@ -43,7 +44,7 @@ class GitDownloader extends VcsDownloader
         $path = $this->normalizePath($path);
 
         $ref = $package->getSourceReference();
-        $flag = defined('PHP_WINDOWS_VERSION_MAJOR') ? '/D ' : '';
+        $flag = Platform::isWindows() ? '/D ' : '';
         $command = 'git clone --no-checkout %s %s && cd '.$flag.'%2$s && git remote add composer %1$s && git fetch composer';
         $this->io->writeError("    Cloning ".$ref);
 
@@ -72,8 +73,7 @@ class GitDownloader extends VcsDownloader
     public function doUpdate(PackageInterface $initial, PackageInterface $target, $path, $url)
     {
         GitUtil::cleanEnv();
-        $path = $this->normalizePath($path);
-        if (!is_dir($path.'/.git')) {
+        if (!$this->hasMetadataRepository($path)) {
             throw new \RuntimeException('The .git directory is missing from '.$path.', see https://getcomposer.org/commit-deps for more information');
         }
 
@@ -100,14 +100,66 @@ class GitDownloader extends VcsDownloader
     public function getLocalChanges(PackageInterface $package, $path)
     {
         GitUtil::cleanEnv();
-        $path = $this->normalizePath($path);
-        if (!is_dir($path.'/.git')) {
+        if (!$this->hasMetadataRepository($path)) {
             return;
         }
 
         $command = 'git status --porcelain --untracked-files=no';
         if (0 !== $this->process->execute($command, $output, $path)) {
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+        }
+
+        return trim($output) ?: null;
+    }
+
+    public function getUnpushedChanges(PackageInterface $package, $path)
+    {
+        GitUtil::cleanEnv();
+        $path = $this->normalizePath($path);
+        if (!$this->hasMetadataRepository($path)) {
+            return;
+        }
+
+        $command = 'git rev-parse --abbrev-ref HEAD';
+        if (0 !== $this->process->execute($command, $output, $path)) {
+            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+        }
+
+        $branch = trim($output);
+
+        // we are on a detached HEAD tag so no need to check for changes
+        if ($branch === 'HEAD') {
+            return;
+        }
+
+        // check that the branch exists in composer remote, if not then we should assume it is an unpushed branch
+        $command = sprintf('git rev-parse --verify composer/%s', $branch);
+        if (0 !== $this->process->execute($command, $output, $path)) {
+            $composerBranch = preg_replace('{(?:^dev-|(?:\.x)?-dev$)}i', '', $package->getPrettyVersion());
+            $branches = '';
+            if (0 === $this->process->execute('git branch -r', $output, $path)) {
+                $branches = $output;
+            }
+            // add 'v' in front of the branch if it was stripped when generating the pretty name
+            if (!preg_match('{^\s+composer/'.preg_quote($composerBranch).'$}m', $branches) && preg_match('{^\s+composer/v'.preg_quote($composerBranch).'$}m', $branches)) {
+                $composerBranch = 'v' . $composerBranch;
+            }
+        } else {
+            $composerBranch = $branch;
+        }
+
+        $command = sprintf('git diff --name-status composer/%s...%s', $composerBranch, $branch);
+        if (0 !== $this->process->execute($command, $output, $path)) {
+            throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+        }
+
+        if (trim($output)) {
+            // fetch from both to make sure we have up to date remotes
+            $this->process->execute('git fetch composer && git fetch origin', $output, $path);
+
+            if (0 !== $this->process->execute($command, $output, $path)) {
+                throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+            }
         }
 
         return trim($output) ?: null;
@@ -120,6 +172,12 @@ class GitDownloader extends VcsDownloader
     {
         GitUtil::cleanEnv();
         $path = $this->normalizePath($path);
+
+        $unpushed = $this->getUnpushedChanges($package, $path);
+        if ($unpushed && ($this->io->isInteractive() || $this->config->get('discard-changes') !== true)) {
+            throw new \RuntimeException('Source directory ' . $path . ' has unpushed changes on the current branch: '."\n".$unpushed);
+        }
+
         if (!$changes = $this->getLocalChanges($package, $path)) {
             return;
         }
@@ -353,7 +411,7 @@ class GitDownloader extends VcsDownloader
 
     protected function normalizePath($path)
     {
-        if (defined('PHP_WINDOWS_VERSION_MAJOR') && strlen($path) > 0) {
+        if (Platform::isWindows() && strlen($path) > 0) {
             $basePath = $path;
             $removed = array();
 
@@ -370,5 +428,15 @@ class GitDownloader extends VcsDownloader
         }
 
         return $path;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function hasMetadataRepository($path)
+    {
+        $path = $this->normalizePath($path);
+
+        return is_dir($path.'/.git');
     }
 }

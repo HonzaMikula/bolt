@@ -43,6 +43,7 @@
 
 namespace PDepend\Source\Language\PHP;
 
+use PDepend\Source\AST\ASTAllocationExpression;
 use PDepend\Source\Tokenizer\Tokens;
 
 /**
@@ -176,6 +177,67 @@ abstract class PHPParserVersion70 extends PHPParserVersion56
     }
 
     /**
+     * Parse the type reference used in an allocation expression.
+     *
+     * @param \PDepend\Source\AST\ASTAllocationExpression $allocation
+     * @return \PDepend\Source\AST\ASTNode
+     * @since 2.3
+     */
+    protected function parseAllocationExpressionTypeReference(ASTAllocationExpression $allocation)
+    {
+        if ($newAllocation = $this->parseAnonymousClassDeclaration($allocation)) {
+            return $newAllocation;
+        }
+        return parent::parseAllocationExpressionTypeReference($allocation);
+    }
+
+    protected function parseAnonymousClassDeclaration(ASTAllocationExpression $allocation)
+    {
+        $this->consumeComments();
+
+        switch ($this->tokenizer->peek()) {
+            case Tokens::T_CLASS:
+                $this->consumeToken(Tokens::T_CLASS);
+                $this->consumeComments();
+
+                $class = $this->builder->buildAnonymousClass();
+                $class->setName(
+                    sprintf(
+                        'class@anonymous%s0x%s',
+                        $this->compilationUnit->getFileName(),
+                        uniqid('')
+                    )
+                );
+                $class->setCompilationUnit($this->compilationUnit);
+                $class->setUserDefined();
+
+                $allocation->addChild($class);
+
+                if ($this->isNextTokenArguments()) {
+                    $allocation->addChild($this->parseArguments());
+                }
+
+                $this->consumeComments();
+                $tokenType = $this->tokenizer->peek();
+
+                if ($tokenType === Tokens::T_EXTENDS) {
+                    $class = $this->parseClassExtends($class);
+
+                    $this->consumeComments();
+                    $tokenType = $this->tokenizer->peek();
+                }
+
+                if ($tokenType === Tokens::T_IMPLEMENTS) {
+                    $this->consumeToken(Tokens::T_IMPLEMENTS);
+                    $this->parseInterfaceList($class);
+                }
+
+                return $class;
+        }
+        return null;
+    }
+
+    /**
      * This method will be called when the base parser cannot handle an expression
      * in the base version. In this method you can implement version specific
      * expressions.
@@ -200,18 +262,50 @@ abstract class PHPParserVersion70 extends PHPParserVersion56
      */
     protected function parseExpressionVersion70()
     {
+        $this->consumeComments();
+
         switch ($this->tokenizer->peek()) {
             case Tokens::T_SPACESHIP:
                 $token = $this->consumeToken(Tokens::T_SPACESHIP);
 
-                $expr = $this->builder->buildAstExpression();
-                $expr->setImage($token->image);
-                $expr->setStartLine($token->startLine);
-                $expr->setStartColumn($token->startColumn);
-                $expr->setEndLine($token->endLine);
-                $expr->setEndColumn($token->endColumn);
+                $expr = $this->builder->buildAstExpression($token->image);
+                $expr->configureLinesAndColumns(
+                    $token->startLine,
+                    $token->endLine,
+                    $token->startColumn,
+                    $token->endColumn
+                );
 
                 return $expr;
         }
+    }
+
+    /**
+     * This method will parse a formal parameter. A formal parameter is at least
+     * a variable name, but can also contain a default parameter value.
+     *
+     * <code>
+     * //               --  -------
+     * function foo(Bar $x, $y = 42) {}
+     * //               --  -------
+     * </code>
+     *
+     * @return \PDepend\Source\AST\ASTFormalParameter
+     * @since 2.0.7
+     */
+    protected function parseFormalParameter()
+    {
+        $parameter = $this->builder->buildAstFormalParameter();
+
+        if (Tokens::T_ELLIPSIS === $this->tokenizer->peek()) {
+            $this->consumeToken(Tokens::T_ELLIPSIS);
+            $this->consumeComments();
+
+            $parameter->setVariableArgList();
+        }
+
+        $parameter->addChild($this->parseVariableDeclarator());
+
+        return $parameter;
     }
 }
