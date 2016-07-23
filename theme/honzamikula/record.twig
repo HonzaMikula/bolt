@@ -45,9 +45,9 @@
          {% if record.gallery %}
            <p>
            {% for image in record.gallery %}
-             <img src="{{ thumbnail(image, 1426, 0) }}"
-                  srcset="{{ thumbnail(image, 713, 0) }} 1x, {{ thumbnail(image, 1426, 0) }} 2x"
-                  width="713" itemprop="image">
+             <img src="{{ thumbnail(image, 144, 0) }}"
+                  srcset="{{ thumbnail(image, 72, 0) }} 1x, {{ thumbnail(image, 144, 0) }} 2x"
+                  width="72" itemprop="image">
            {% endfor %}
            </p>
          {% endif %}
@@ -90,10 +90,7 @@
       <div>
         <ul id="social" aria-label="Sdílet na sociálních sítí">
           <li>
-            <div class="fb-like" data-width="100" data-colorscheme="light" data-layout="box_count" data-href="{{ paths.currenturl }}/" data-action="like" data-show-faces="true" data-send="false" data-count="vertical"></div>
-          </li>
-          <li>
-            <div class="g-plusone" data-size="tall"></div>
+            <div class="fb-like" data-layout="button_count" data-href="{{ paths.currenturl }}/" data-action="like" data-show-faces="false" data-size="large" data-share="false"></div>
           </li>
           <li>
             <a href="https://twitter.com/share" class="twitter-share-button" data-size="large" data-count="vertical" data-via="janmikula" data-lang="cs" data-url="{{ paths.currenturl }}/">Tweet</a>
@@ -165,15 +162,6 @@
     {% endfor %}
 
     <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
-    <script>
-      window.___gcfg = {lang: 'cs'};
-
-      (function() {
-        var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
-        po.src = 'https://apis.google.com/js/plusone.js';
-        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
-      })();
-    </script>
     <script src="https://d1xnn692s7u6t6.cloudfront.net/widget.js"></script>
     <script>(function k(){window.$SendToKindle&&window.$SendToKindle.Widget?$SendToKindle.Widget.init({}):setTimeout(k,500);})();</script>
 
