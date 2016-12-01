@@ -45,9 +45,9 @@
          {% if record.gallery %}
            <p>
            {% for image in record.gallery %}
-             <img src="{{ thumbnail(image, 144, 0) }}"
-                  srcset="{{ thumbnail(image, 72, 0) }} 1x, {{ thumbnail(image, 144, 0) }} 2x"
-                  width="72" itemprop="image">
+             <img src="{{ thumbnail(image, 1426, 0) }}"
+                  srcset="{{ thumbnail(image, 713, 0) }} 1x, {{ thumbnail(image, 1426, 0) }} 2x"
+                  width="713" itemprop="image">
            {% endfor %}
            </p>
          {% endif %}
